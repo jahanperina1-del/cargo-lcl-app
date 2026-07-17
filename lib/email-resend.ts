@@ -18,7 +18,7 @@ export async function sendWelcomeEmail(client: EmailClient) {
       from: 'Caribbean Supply <noreply@caribbeansupply.net>',
       to: client.email,
       subject: `🎉 Bienvenue chez Caribbean Supply - Votre numéro client: ${client.clientNumber}`,
-      template: 'welcome-email', // Template ID dans Resend
+      template: { id: 'welcome-email' },
       props: {
         firstName: client.firstName,
         lastName: client.lastName,
@@ -50,7 +50,7 @@ export async function sendPaymentConfirmationEmail(
       from: 'Caribbean Supply <noreply@caribbeansupply.net>',
       to: client.email,
       subject: `✅ Paiement confirmé - Facture #${invoiceNumber}`,
-      template: 'payment-confirmation', // Template ID dans Resend
+      template: { id: 'payment-confirmation' },
       props: {
         firstName: client.firstName,
         clientNumber: client.clientNumber,
@@ -83,7 +83,7 @@ export async function sendReminderEmail(client: EmailClient) {
       from: 'Caribbean Supply <noreply@caribbeansupply.net>',
       to: client.email,
       subject: `📦 ${client.firstName}, vos colis sont prêts? (${client.clientNumber})`,
-      template: 'reminder-email', // Template ID dans Resend
+      template: { id: 'reminder-email' },
       props: {
         firstName: client.firstName,
         clientNumber: client.clientNumber,
