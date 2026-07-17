@@ -26,25 +26,18 @@ export async function POST(request: NextRequest) {
         const clientName = session.metadata.clientName || 'Client'
         const amount = (session.amount_total || 0) / 100
 
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-            'Content-Type': 'application/json',
+        await resend.emails.send({
+          from: 'Caribbean Supply <contact@caribbeansupply.net>',
+          to: session.customer_email,
+          template: 'payment-confirmation',
+          props: {
+            firstName: clientName.split(' ')[0],
+            clientNumber: clientNumber,
+            cbm: cbm.toFixed(2),
+            amount: amount.toFixed(2),
+            invoiceNumber: sessionId,
           },
-          body: JSON.stringify({
-            from: 'Caribbean Supply <contact@caribbeansupply.net>',
-            to: session.customer_email,
-            template_id: 'payment-confirmation',
-            variables: {
-              firstName: clientName.split(' ')[0],
-              clientNumber: clientNumber,
-              cbm: cbm.toFixed(2),
-              amount: amount.toFixed(2),
-              invoiceNumber: sessionId,
-            },
-          }),
-        }).catch(err => console.error('Email API error:', err))
+        } as any).catch(err => console.error('Email error:', err))
       }
 
       return NextResponse.json({
