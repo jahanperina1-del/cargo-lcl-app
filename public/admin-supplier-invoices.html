@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Factures Fournisseur</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .admin-container { max-width: 1000px; margin: 60px auto; padding: 0 20px; }
+    .admin-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r-xl); padding: 40px; box-shadow: var(--sh-lg); }
+    .admin-card h1 { color: var(--navy-700); margin-bottom: 30px; }
+    .invoices-table { width: 100%; border-collapse: collapse; }
+    .invoices-table thead { background: var(--paper); }
+    .invoices-table th { padding: 14px; text-align: left; font-weight: 700; color: var(--navy-700); border-bottom: 2px solid var(--line); font-size: 0.9rem; }
+    .invoices-table td { padding: 14px; border-bottom: 1px solid var(--line); }
+    .invoices-table tbody tr:hover { background: var(--paper); }
+    .client-info { font-weight: 600; color: var(--navy-700); }
+    .client-email { font-size: 0.85rem; color: var(--slate); }
+    .upload-date { font-size: 0.9rem; color: var(--slate); }
+    .actions { display: flex; gap: 8px; }
+    .btn-view { background: var(--turq-600); color: #fff; padding: 8px 14px; border-radius: var(--r-md); text-decoration: none; font-size: 0.85rem; display: inline-block; }
+    .btn-view:hover { background: var(--turq-500); }
+    .no-invoices { text-align: center; padding: 60px 20px; color: var(--slate); }
+    .no-invoices p { margin: 10px 0 0; font-size: 1.05rem; }
+    .loading { text-align: center; padding: 40px; color: var(--slate); }
+    @media (max-width: 768px) {
+      .admin-container { padding: 0 12px; }
+      .admin-card { padding: 24px; }
+      .invoices-table { font-size: 0.9rem; }
+      .invoices-table th, .invoices-table td { padding: 10px; }
+      .actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a href="index.html" class="brand" aria-label="Caribbean Supply accueil">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span>
+      <span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Admin</span></span>
+    </a>
+  </div>
+</header>
+
+<div class="admin-container">
+  <div class="admin-card">
+    <h1>📄 Factures Fournisseur Reçues</h1>
+
+    <div id="content"></div>
+  </div>
+</div>
+
+<script>
+  fetch('/api/supplier-invoices/list')
+    .then(r => r.json())
+    .then(res => {
+      const content = document.getElementById('content');
+
+      if (!res.invoices || res.invoices.length === 0) {
+        content.innerHTML = '<div class="no-invoices"><p>📭 Aucune facture reçue</p></div>';
+        return;
+      }
+
+      let html = '<table class="invoices-table"><thead><tr><th>Client</th><th>Email</th><th>Fichier</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
+
+      res.invoices.forEach(inv => {
+        const date = new Date(inv.uploaded_at).toLocaleDateString('fr-FR');
+        html += `
+          <tr>
+            <td><div class="client-info">${inv.client_number}</div><div class="client-email">${inv.client_name}</div></td>
+            <td class="client-email">${inv.client_email}</td>
+            <td><span style="font-family: monospace; font-size: 0.85rem;">${inv.original_name}</span></td>
+            <td class="upload-date">${date}</td>
+            <td class="actions">
+              <a href="${inv.file_url}" target="_blank" class="btn-view">📥 Télécharger</a>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+      content.innerHTML = html;
+    })
+    .catch(e => {
+      document.getElementById('content').innerHTML = '<div class="no-invoices"><p>❌ Erreur chargement</p></div>';
+      console.error(e);
+    });
+</script>
+
+</body>
+</html>
