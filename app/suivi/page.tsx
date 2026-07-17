@@ -102,6 +102,23 @@ export default function SuiviPage() {
     return s.destination === filter
   })
 
+  // Calculate container fill rates per destination
+  const containerCapacity = 67 // CBM per 40ft container
+  const destinationStats = ['Martinique', 'Guadeloupe', 'Guyane'].map(dest => {
+    const destShipments = shipments.filter(s => s.destination === dest && !s.status.livré)
+    const totalCbm = destShipments.reduce((sum, s) => sum + s.cbm, 0)
+    const fillPercentage = Math.min((totalCbm / containerCapacity) * 100, 100)
+    const containerCount = Math.ceil(totalCbm / containerCapacity)
+
+    return {
+      destination: dest,
+      totalCbm,
+      fillPercentage,
+      containerCount,
+      isReady: fillPercentage >= 100,
+    }
+  })
+
   const currentStep = (status: ShipmentStatus) => {
     if (status.livré) return 3
     if (status.enMer) return 2
@@ -170,6 +187,67 @@ export default function SuiviPage() {
               </button>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Container Fill Gauges */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h2 className="text-2xl font-bold text-slate-900 mb-6">📦 Remplissage des conteneurs</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {destinationStats.map(stat => (
+            <div key={stat.destination} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              {/* Header */}
+              <div className={`bg-gradient-to-r ${destinationColors[stat.destination]} px-6 py-4 text-white`}>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold">{stat.destination}</h3>
+                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                    stat.isReady ? 'bg-green-200 text-green-900' : 'bg-yellow-200 text-yellow-900'
+                  }`}>
+                    {stat.isReady ? '✓ Prêt' : 'En cours'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Gauge */}
+              <div className="p-6">
+                {/* Visual Bar */}
+                <div className="mb-4">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-700">Remplissage</span>
+                    <span className="text-sm font-bold text-slate-900">{stat.fillPercentage.toFixed(0)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        stat.fillPercentage >= 100
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                          : stat.fillPercentage >= 50
+                          ? 'bg-gradient-to-r from-blue-500 to-cyan-600'
+                          : 'bg-gradient-to-r from-orange-500 to-yellow-600'
+                      }`}
+                      style={{ width: `${Math.min(stat.fillPercentage, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                  <div>
+                    <p className="text-xs text-slate-600 uppercase tracking-wide">Volume</p>
+                    <p className="text-xl font-bold text-slate-900">
+                      {stat.totalCbm.toFixed(1)}/{67} CBM
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-600 uppercase tracking-wide">Conteneurs</p>
+                    <p className="text-xl font-bold text-slate-900">
+                      {stat.containerCount} × 40ft
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
