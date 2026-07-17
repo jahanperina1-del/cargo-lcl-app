@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { registerClient } from '@/lib/auth'
 import { sendToGoogleSheet } from '@/lib/google-sheets'
+import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +21,14 @@ export async function POST(request: NextRequest) {
 
     // Sync Google Sheets
     await sendToGoogleSheet({ type: 'client', ...result.client })
+
+    // Send welcome email
+    await sendWelcomeEmail({
+      firstName,
+      lastName,
+      email,
+      clientNumber: result.client!.clientNumber,
+    })
 
     return NextResponse.json({ success: true, client: result.client })
   } catch (error) {
