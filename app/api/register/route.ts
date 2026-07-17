@@ -28,13 +28,15 @@ export async function POST(request: NextRequest) {
     await resend.emails.send({
       from: 'Caribbean Supply <contact@caribbeansupply.net>',
       to: email,
-      template: 'welcome-email',
+      template: {
+        id: 'welcome-email',
+      },
       props: {
         firstName: result.client!.firstName,
         lastName: result.client!.lastName,
         clientNumber: result.client!.clientNumber,
       },
-    }).catch(err => console.error('Email error:', err))
+    } as any).catch(err => console.error('Email error:', err))
 
     return NextResponse.json({ success: true, client: result.client })
   } catch (error) {

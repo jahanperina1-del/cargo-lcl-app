@@ -29,7 +29,9 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: 'Caribbean Supply <contact@caribbeansupply.net>',
           to: session.customer_email,
-          template: 'payment-confirmation',
+          template: {
+            id: 'payment-confirmation',
+          },
           props: {
             firstName: clientName.split(' ')[0],
             clientNumber: clientNumber,
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
             amount: amount.toFixed(2),
             invoiceNumber: sessionId,
           },
-        }).catch(err => console.error('Email error:', err))
+        } as any).catch(err => console.error('Email error:', err))
       }
 
       return NextResponse.json({
