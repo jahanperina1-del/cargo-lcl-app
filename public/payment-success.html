@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Paiement réussi — Caribbean Supply</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+body { background: linear-gradient(135deg, #15264A, #0C1A33); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.success-card { background: #fff; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.3); padding: 60px 40px; text-align: center; max-width: 500px; }
+.success-icon { font-size: 80px; margin-bottom: 20px; animation: bounce 1s ease-out; }
+@keyframes bounce { 0% { transform: scale(0); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+.success-card h1 { color: #15264A; font-size: 28px; margin-bottom: 12px; }
+.success-card p { color: #666; font-size: 16px; margin-bottom: 30px; }
+.success-details { background: #f5f5f5; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: left; }
+.detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+.detail-row:last-child { border: none; }
+.detail-label { color: #666; }
+.detail-value { font-weight: 600; color: #15264A; }
+.btn { display: inline-block; background: linear-gradient(135deg, #16C6C0, #16C6C0); color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 20px; border: none; cursor: pointer; }
+.btn:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<div class="success-card">
+  <div class="success-icon">✅</div>
+  <h1>Paiement réussi!</h1>
+  <p>Merci! Votre paiement a été traité avec succès.</p>
+
+  <div class="success-details">
+    <div class="detail-row">
+      <span class="detail-label">Volume facturé:</span>
+      <span class="detail-value" id="paymentCbm">0 CBM</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Montant payé:</span>
+      <span class="detail-value" id="paymentAmount">0€</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">N° client:</span>
+      <span class="detail-value" id="paymentClient">—</span>
+    </div>
+  </div>
+
+  <p style="color: #999; font-size: 14px;">
+    Un reçu de paiement a été envoyé à votre email.
+  </p>
+
+  <a href="espace-client.html" class="btn">Retour à mon espace</a>
+</div>
+
+<script>
+// Récupérer les params de l'URL
+const urlParams = new URLSearchParams(window.location.search)
+const sessionId = urlParams.get('session_id')
+const cbm = sessionId ? sessionStorage.getItem('cbm') : '0'
+const amount = sessionId ? sessionStorage.getItem('amount') : '0'
+const client = JSON.parse(localStorage.getItem('cs_client') || '{}')
+
+// Afficher les infos
+document.getElementById('paymentCbm').textContent = cbm + ' CBM'
+document.getElementById('paymentAmount').textContent = amount + '€'
+document.getElementById('paymentClient').textContent = client.number || '—'
+</script>
+
+</body>
+</html>

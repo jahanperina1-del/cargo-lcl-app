@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Espace client — Caribbean Supply</title>
+<meta name="description" content="Créez votre espace client Caribbean Supply : numéro client unique, suivi de vos commandes et de vos expéditions maritimes." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+.page-hero { background: radial-gradient(800px 400px at 88% 0%, rgba(22,198,192,.14), transparent 60%), linear-gradient(160deg, #15264A, #0C1A33); color: #fff; padding: clamp(40px,6vw,68px) 0 clamp(80px,9vw,120px); }
+.page-hero h1 { color: #fff; }
+.page-hero .lead { color: #B9C8E2; max-width: 46ch; }
+.breadcrumb { display: flex; gap: 8px; align-items: center; color: #8FA2C2; font-size: 0.88rem; margin-bottom: 20px; }
+.breadcrumb a { color: var(--turq-400); } .breadcrumb svg { width: 14px; height: 14px; }
+
+.auth-wrap { margin-top: -80px; position: relative; z-index: 2; padding-bottom: clamp(60px,8vw,100px); }
+.auth-grid { display: grid; grid-template-columns: 1fr 0.9fr; gap: 26px; align-items: start; }
+@media (max-width: 900px) { .auth-grid { grid-template-columns: 1fr; } }
+
+.auth-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--sh-lg); padding: clamp(24px,3vw,38px); }
+.tabs { display: flex; gap: 6px; background: var(--paper); padding: 5px; border-radius: var(--r-pill); margin-bottom: 26px; }
+.tab { flex: 1; text-align: center; padding: 11px; border-radius: var(--r-pill); font-family: var(--font-display); font-weight: 500; font-size: 0.96rem; color: var(--slate); cursor: pointer; border: none; background: none; transition: all .2s; }
+.tab.active { background: #fff; color: var(--navy-700); box-shadow: var(--sh-sm); }
+
+.pane { display: none; } .pane.show { display: block; animation: fadeUp .4s cubic-bezier(.2,.7,.3,1); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.info-side { padding-top: 8px; }
+.info-card { background: linear-gradient(160deg, var(--navy-700), var(--navy-900)); color: #fff; border-radius: var(--r-xl); padding: 30px; box-shadow: var(--sh-lg); }
+.info-card h3 { color: #fff; }
+.info-card .num-demo { font-family: var(--font-display); font-weight: 700; font-size: 1.9rem; letter-spacing: .08em; color: var(--turq-400); background: rgba(255,255,255,.06); border: 1px dashed rgba(56,217,210,.4); border-radius: var(--r-md); padding: 14px; text-align: center; margin: 18px 0; }
+.info-list { margin-top: 18px; }
+.info-list li { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; color: #C6D2E6; font-size: 0.95rem; }
+.info-list li svg { width: 20px; height: 20px; color: var(--turq-400); flex-shrink: 0; margin-top: 2px; }
+.msg { padding: 12px 15px; border-radius: var(--r-md); font-size: 0.9rem; font-weight: 600; margin-bottom: 16px; display: none; }
+.msg.err { display: block; background: rgba(255,122,61,.10); color: var(--orange-600); border: 1px solid rgba(255,122,61,.25); }
+
+/* dashboard */
+.dash { display: none; }
+.dash.show { display: block; animation: fadeUp .5s; }
+.dash-head { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; background: linear-gradient(150deg, var(--navy-700), var(--navy-900)); color: #fff; border-radius: var(--r-xl); padding: 28px 32px; box-shadow: var(--sh-lg); margin-bottom: 24px; }
+.dash-head .hi { font-size: 0.9rem; color: #AFC0DD; }
+.dash-head h2 { color: #fff; margin: 4px 0 0; font-size: 1.7rem; }
+.client-badge { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: var(--r-md); padding: 12px 18px; text-align: right; }
+.client-badge .l { font-size: 0.72rem; letter-spacing: .12em; text-transform: uppercase; color: #8FA2C2; }
+.client-badge .v { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; letter-spacing: .1em; color: var(--turq-400); }
+.dash-cols { display: grid; grid-template-columns: 1.5fr 1fr; gap: 22px; }
+@media (max-width: 860px) { .dash-cols { grid-template-columns: 1fr; } }
+
+.order { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; box-shadow: var(--sh-sm); margin-bottom: 18px; }
+.order-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.order-top .ref { font-family: var(--font-display); font-weight: 700; color: var(--navy-700); }
+.order-top .dest { font-size: 0.88rem; color: var(--slate); }
+.badge-status { font-size: 0.78rem; font-weight: 700; padding: 5px 12px; border-radius: var(--r-pill); }
+.badge-status.transit { background: rgba(22,198,192,.12); color: var(--turq-600); }
+.badge-status.prep { background: rgba(255,122,61,.12); color: var(--orange-600); }
+
+.timeline { display: flex; justify-content: space-between; position: relative; margin-top: 8px; }
+.timeline::before { content: ""; position: absolute; left: 14px; right: 14px; top: 13px; height: 3px; background: var(--line-strong); border-radius: 3px; }
+.timeline .tl-fill { position: absolute; left: 14px; top: 13px; height: 3px; background: linear-gradient(90deg, var(--turq-500), var(--orange-500)); border-radius: 3px; }
+.tl-step { position: relative; z-index: 1; text-align: center; width: 25%; }
+.tl-dot { width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 3px solid var(--line-strong); margin: 0 auto 8px; display: grid; place-items: center; }
+.tl-dot svg { width: 13px; height: 13px; color: #fff; opacity: 0; }
+.tl-step.done .tl-dot { background: var(--turq-500); border-color: var(--turq-500); }
+.tl-step.done .tl-dot svg { opacity: 1; }
+.tl-step.current .tl-dot { background: var(--orange-500); border-color: var(--orange-500); box-shadow: 0 0 0 5px rgba(255,122,61,.18); }
+.tl-label { font-size: 0.74rem; font-weight: 600; color: var(--slate); }
+.tl-step.done .tl-label, .tl-step.current .tl-label { color: var(--navy-700); }
+
+.side-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; box-shadow: var(--sh-sm); margin-bottom: 18px; }
+.side-card h4 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 14px; }
+.kv { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 0.92rem; }
+.kv:last-child { border: none; } .kv .k { color: var(--slate); } .kv .v { font-weight: 700; color: var(--navy-700); }
+.logout { background: none; border: 1px solid var(--line-strong); color: var(--slate); font-family: var(--font-body); font-weight: 600; padding: 10px 18px; border-radius: var(--r-pill); cursor: pointer; transition: all .18s; }
+.logout:hover { border-color: var(--orange-500); color: var(--orange-600); }
+
+/* CRITICAL ALERT */
+.critical-alert { background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(229, 72, 72, 0.1)); border: 2px solid #ef4444; border-radius: var(--r-lg); padding: 20px 24px; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start; }
+.critical-alert svg { width: 28px; height: 28px; color: #ef4444; flex-shrink: 0; margin-top: 2px; }
+.critical-alert h4 { color: #dc2626; font-size: 1.1rem; font-weight: 700; margin: 0 0 8px; }
+.critical-alert p { color: #991b1b; font-size: 0.95rem; line-height: 1.6; margin: 0; }
+.critical-alert .highlight { background: #fef2f2; border-left: 3px solid #ef4444; padding: 12px; margin: 12px 0; border-radius: 4px; font-weight: 600; }
+
+/* WAREHOUSE ADDRESS CARD */
+.warehouse-card { background: linear-gradient(135deg, #f8fafc, #f0f9ff); border: 2px solid #06b6d4; border-radius: var(--r-lg); padding: 20px; margin-bottom: 18px; }
+.warehouse-card h4 { color: #06b6d4; margin: 0 0 12px; font-size: 1rem; }
+.warehouse-card .address-box { background: white; border: 1px solid #cffafe; border-radius: 8px; padding: 14px; font-size: 0.95rem; line-height: 1.6; font-family: monospace; }
+.warehouse-card .address-box b { color: #0891b2; display: block; margin-top: 8px; }
+.warehouse-card .note { font-size: 0.85rem; color: #0c7792; margin-top: 10px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span><span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span></a>
+    <nav class="nav-links">
+      <a href="comment-ca-marche.html">Comment ça marche</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="simulateur.html">Simulateur</a>
+      <a href="espace-client.html" class="active">Espace client</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="simulateur.html" class="btn btn-primary nav-cta-keep">Simuler mon devis</a>
+      <button class="nav-toggle" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="index.html">Accueil</a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg><span>Espace client</span></div>
+    <span class="eyebrow on-dark">Votre tableau de bord</span>
+    <h1 style="margin-top:14px">Suivez vos expéditions en un coup d'œil</h1>
+    <p class="lead">Créez votre compte pour obtenir un numéro client unique et suivre chaque commande, du départ de Chine jusqu'à votre île.</p>
+  </div>
+</section>
+
+<section class="auth-wrap">
+  <div class="wrap">
+    <!-- AUTH (shown when logged out) -->
+    <div class="auth-grid" id="authView">
+      <div class="auth-card reveal">
+        <div class="tabs">
+          <button class="tab active" data-tab="login">Connexion</button>
+          <button class="tab" data-tab="signup">Inscription</button>
+        </div>
+
+        <div class="msg" id="msg"></div>
+
+        <!-- LOGIN -->
+        <div class="pane show" data-pane="login">
+          <div class="field"><label for="liEmail">E-mail</label><input class="input" id="liEmail" type="email" placeholder="vous@exemple.com" /></div>
+          <div class="field"><label for="liPass">Mot de passe</label><input class="input" id="liPass" type="password" placeholder="••••••••" /></div>
+          <button class="btn btn-primary btn-block btn-lg" id="loginBtn">Se connecter</button>
+          <p class="muted" style="font-size:.86rem;margin:14px 0 0;text-align:center">Pas encore de compte ? <a href="#" id="toSignup" style="color:var(--turq-600);font-weight:600">Créez-en un</a></p>
+        </div>
+
+        <!-- SIGNUP -->
+        <div class="pane" data-pane="signup">
+          <div class="field-row">
+            <div class="field"><label for="suFirst">Prénom</label><input class="input" id="suFirst" placeholder="Marie" /></div>
+            <div class="field"><label for="suLast">Nom</label><input class="input" id="suLast" placeholder="Joseph" /></div>
+          </div>
+          <div class="field"><label for="suEmail">E-mail</label><input class="input" id="suEmail" type="email" placeholder="vous@exemple.com" /></div>
+          <div class="field"><label for="suPhone">Téléphone</label><input class="input" id="suPhone" type="tel" placeholder="+596 696 …" /></div>
+          <div class="field">
+            <label for="suDest">Île de livraison</label>
+            <select class="select" id="suDest"><option value="MTQ">🇲🇶 Martinique</option><option value="GLP">🇬🇵 Guadeloupe</option><option value="GUY">🇬🇫 Guyane</option></select>
+          </div>
+          <div class="field"><label for="suPass">Mot de passe</label><input class="input" id="suPass" type="password" placeholder="Choisissez un mot de passe" /></div>
+          <button class="btn btn-accent btn-block btn-lg" id="signupBtn">Créer mon compte</button>
+        </div>
+      </div>
+
+      <div class="info-side reveal d1">
+        <div class="info-card">
+          <h3>Votre numéro client</h3>
+          <p style="color:#B9C8E2;margin-bottom:0">Dès l'inscription, vous recevez un identifiant unique au format :</p>
+          <div class="num-demo">MTQ‑A4F‑001</div>
+          <ul class="info-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg> À indiquer sur tous vos colis en Chine</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg> Pour identifier instantanément vos envois</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg> Suivi centralisé de toutes vos commandes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD (shown when logged in) -->
+    <div class="dash" id="dashView">
+      <div class="dash-head">
+        <div>
+          <div class="hi">Bon retour,</div>
+          <h2 id="dashName">Marie Joseph</h2>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="client-badge">
+            <div class="l">N° client</div>
+            <div class="v" id="dashNum">MTQ‑A4F‑001</div>
+          </div>
+          <button class="logout" id="logoutBtn">Déconnexion</button>
+        </div>
+      </div>
+
+      <!-- CRITICAL ALERT -->
+      <div class="critical-alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div>
+          <h4>⚠️ IMPORTANT — Codes articles obligatoires</h4>
+          <p>Nous <strong>n'acceptons PAS les colis sans codes articles (SKU)</strong> visibles et lisibles sur l'étiquette. C'est indispensable pour le tri et la livraison.</p>
+          <div class="highlight">
+            🚫 Pas de code article = Colis refusé au warehouse
+          </div>
+          <p><strong>À faire impérativement :</strong></p>
+          <p style="margin-top: 8px;">Demandez à votre fournisseur chinois d'ajouter sur CHAQUE carton :</p>
+          <p style="margin: 8px 0; font-family: monospace; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 4px;">
+            📌 Votre N° CLIENT : <span id="alertNum" style="font-weight:bold;color:#dc2626">MTQ‑A4F‑001</span><br/>
+            📌 CODE ARTICLE (SKU)<br/>
+            📌 QUANTITÉ
+          </p>
+          <p style="margin-top: 12px;"><em>Exemple : "SKU-12345-A | Qty: 50 pcs | N° client: MTQ‑A4F‑001"</em></p>
+        </div>
+      </div>
+
+      <div class="dash-cols">
+        <div>
+          <h3 style="font-size:1.2rem;margin-bottom:14px">Vos expéditions</h3>
+
+          <div class="order">
+            <div class="order-top">
+              <div><span class="ref">#CS‑20847</span> <span class="dest" id="ord1Dest">· Martinique</span></div>
+              <span class="badge-status transit">En transit</span>
+            </div>
+            <div class="timeline">
+              <div class="tl-fill" style="width:58%"></div>
+              <div class="tl-step done"><div class="tl-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><div class="tl-label">Commandé</div></div>
+              <div class="tl-step done"><div class="tl-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><div class="tl-label">Entrepôt</div></div>
+              <div class="tl-step current"><div class="tl-dot"></div><div class="tl-label">En mer</div></div>
+              <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">Livré</div></div>
+            </div>
+          </div>
+
+          <div class="order">
+            <div class="order-top">
+              <div><span class="ref">#CS‑20963</span> <span class="dest" id="ord2Dest">· Martinique</span></div>
+              <span class="badge-status prep">Préparation</span>
+            </div>
+            <div class="timeline">
+              <div class="tl-fill" style="width:16%"></div>
+              <div class="tl-step done"><div class="tl-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><div class="tl-label">Commandé</div></div>
+              <div class="tl-step current"><div class="tl-dot"></div><div class="tl-label">Entrepôt</div></div>
+              <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">En mer</div></div>
+              <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">Livré</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="warehouse-card">
+            <h4>📦 Adresse officielle du Warehouse Chine</h4>
+            <div class="address-box">
+              Caribbean Supply<br/>
+              <b id="addrNum">(MTQ‑A4F‑001)</b><br/>
+              <br/>
+              深圳市龙岗区<br/>
+              朗深科技园 102室<br/>
+              <b style="margin-top: 8px; display: block;">📞 +86 19898149058</b>
+              <b style="margin-top: 8px; display: block;">👤 Destinataire: Peggy</b>
+            </div>
+            <div class="note">✅ Important : Écrivez le numéro client ET les codes articles sur chaque carton</div>
+          </div>
+          <div class="side-card">
+            <h4>Récapitulatif</h4>
+            <div class="kv"><span class="k">Expéditions en cours</span><span class="v">2</span></div>
+            <div class="kv"><span class="k">Volume total</span><span class="v">1,84 CBM</span></div>
+            <div class="kv"><span class="k">Île</span><span class="v" id="dashIsland">Martinique</span></div>
+          </div>
+          <a href="simulateur.html" class="btn btn-accent btn-block">Nouvelle estimation</a>
+
+          <!-- PAYMENT SECTION -->
+          <div class="side-card" style="background:linear-gradient(135deg, rgba(22,198,192,.08), rgba(255,122,61,.08));border:1px solid rgba(22,198,192,.2)">
+            <h4 style="color:var(--turq-600)">💳 Payer en ligne</h4>
+            <p class="muted" style="font-size:.9rem;margin-bottom:14px">Payez votre CBM directement (380€ HT/CBM)</p>
+            <div class="field" style="margin-bottom:14px">
+              <label for="paymentCBM" style="font-size:.9rem">Volume à payer (CBM)</label>
+              <input class="input" id="paymentCBM" type="number" placeholder="0.5" step="0.1" min="0.1" />
+            </div>
+            <div style="background:rgba(22,198,192,.1);border-radius:8px;padding:10px;margin-bottom:12px;font-size:.85rem">
+              <div style="display:flex;justify-content:space-between">
+                <span>Montant:</span>
+                <strong style="color:var(--turq-600)" id="paymentAmount">0€</strong>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="stripePayBtn" style="background:linear-gradient(135deg, var(--turq-500), #16C6C0)">Payer avec Stripe</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span><span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span></a>
+        <p>Transport cargo maritime LCL et sourcing entre la Chine et les Antilles françaises.</p>
+      </div>
+      <div class="footer-col"><h4>Services</h4><a href="simulateur.html">Simulateur de devis</a><a href="sourcing.html">Service sourcing</a><a href="comment-ca-marche.html">Comment ça marche</a><a href="espace-client.html">Espace client</a></div>
+      <div class="footer-col"><h4>Destinations</h4><a href="simulateur.html"><span class="flag-mq" role="img" aria-label="Drapeau de la Martinique"></span> Martinique</a><a href="simulateur.html">🇬🇵 Guadeloupe</a><a href="simulateur.html">🇬🇫 Guyane</a></div>
+      <div class="footer-col"><h4>Contact</h4><a href="https://wa.me/596696191509" target="_blank" rel="noopener">WhatsApp · +596 696 19 15 09</a><a href="mailto:contact@caribbeansupply.fr">contact@caribbeansupply.fr</a><a href="contact.html">Page contact</a></div>
+    </div>
+    <div class="footer-bottom"><span>© <span data-year>2026</span> Caribbean Supply — Tous droits réservés.</span><span>Groupage LCL · 380€ HT/CBM · Sourcing 100€</span></div>
+  </div>
+</footer>
+
+<div class="wa-float">
+  <span class="wa-tip">Une question ? Écrivez-nous</span>
+  <a href="https://wa.me/596696191509" target="_blank" rel="noopener" aria-label="Contacter sur WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.07-1-.28-.1-.48-.15-.68.15s-.78 1-.96 1.2c-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.51l-.58-.01c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.8-.73 2.05-1.44.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.1.8.83-3-.2-.31A8.2 8.2 0 1 1 12 20.2Z"/></svg></a>
+</div>
+
+<script src="app.js"></script>
+<script src="stripe-payment.js"></script>
+<script>
+(function () {
+  var KEY = "cs_client";
+  var ISLANDS = { MTQ: "Martinique", GLP: "Guadeloupe", GUY: "Guyane" };
+
+  function $(s) { return document.querySelector(s); }
+  function showMsg(t) { var m = $("#msg"); m.textContent = t; m.className = "msg err"; }
+  function clearMsg() { $("#msg").className = "msg"; }
+
+  // tabs
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () { switchTab(t.getAttribute("data-tab")); });
+  });
+  $("#toSignup").addEventListener("click", function (e) { e.preventDefault(); switchTab("signup"); });
+  function switchTab(name) {
+    clearMsg();
+    document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-tab") === name); });
+    document.querySelectorAll(".pane").forEach(function (p) { p.classList.toggle("show", p.getAttribute("data-pane") === name); });
+  }
+
+  function save(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } }
+
+  // Normalise le client renvoyé par l'API vers le format d'affichage
+  function toView(api) {
+    return {
+      name: api.firstName + " " + api.lastName,
+      email: api.email,
+      destCode: api.destination,
+      island: ISLANDS[api.destination] || api.destination,
+      number: api.clientNumber
+    };
+  }
+
+  function setBusy(btn, busy, label) {
+    btn.disabled = busy;
+    btn.textContent = busy ? "Un instant…" : label;
+  }
+
+  // signup — création du compte côté serveur (numéro client unique)
+  $("#signupBtn").addEventListener("click", function () {
+    var first = $("#suFirst").value.trim(), last = $("#suLast").value.trim();
+    var email = $("#suEmail").value.trim(), pass = $("#suPass").value;
+    var phone = $("#suPhone").value.trim(), destCode = $("#suDest").value;
+    if (!first || !last || !email || !phone || !pass) { showMsg("Merci de remplir tous les champs obligatoires."); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showMsg("Adresse e-mail invalide."); return; }
+    var btn = $("#signupBtn");
+    setBusy(btn, true, "Créer mon compte");
+    fetch("/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ firstName: first, lastName: last, email: email, phone: phone, password: pass, destination: destCode })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.d.client) { showMsg(res.d.error || "Erreur lors de l'inscription."); return; }
+        var c = toView(res.d.client);
+        save(c);
+        renderDash(c);
+      })
+      .catch(function () { showMsg("Connexion au serveur impossible. Réessayez."); })
+      .finally(function () { setBusy(btn, false, "Créer mon compte"); });
+  });
+
+  // login — vérification côté serveur
+  $("#loginBtn").addEventListener("click", function () {
+    var email = $("#liEmail").value.trim(), pass = $("#liPass").value;
+    if (!email || !pass) { showMsg("Merci de saisir votre e-mail et votre mot de passe."); return; }
+    var btn = $("#loginBtn");
+    setBusy(btn, true, "Se connecter");
+    fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email, password: pass })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.d.client) { showMsg(res.d.error || "Email ou mot de passe incorrect."); return; }
+        var c = toView(res.d.client);
+        save(c);
+        renderDash(c);
+      })
+      .catch(function () { showMsg("Connexion au serveur impossible. Réessayez."); })
+      .finally(function () { setBusy(btn, false, "Se connecter"); });
+  });
+
+  $("#logoutBtn").addEventListener("click", function () { $("#dashView").classList.remove("show"); $("#authView").style.display = ""; switchTab("login"); window.scrollTo({ top: 0, behavior: "smooth" }); });
+
+  function renderDash(c) {
+    $("#dashName").textContent = c.name;
+    $("#dashNum").textContent = c.number;
+    $("#addrNum").textContent = "(" + c.number + ")";
+    $("#alertNum").textContent = c.number;
+    $("#dashIsland").textContent = c.island;
+    $("#ord1Dest").textContent = "· " + c.island;
+    $("#ord2Dest").textContent = "· " + c.island;
+    $("#authView").style.display = "none";
+    $("#dashView").classList.add("show");
+    clearMsg();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // auto-login if returning
+  var existing = load();
+  if (existing && existing.number) {
+    $("#liEmail").value = existing.email;
+  }
+})();
+</script>
+</body>
+</html>

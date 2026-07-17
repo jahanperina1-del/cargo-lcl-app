@@ -1,0 +1,62 @@
+{
+  "clients": [
+    {
+      "id": "1783809210833",
+      "clientNumber": "MTQ-X3T-001",
+      "firstName": "Jahan",
+      "lastName": "Perina",
+      "email": "jahanperina1@gmail.com",
+      "phone": "+596696191509",
+      "password": "$2b$10$KMA4pdTbjd7VTotaqlTdY.HqVq8VJCsm8OaT9tTD/hXFQwMFKtGZy",
+      "destination": "MTQ",
+      "createdAt": "2026-07-11T22:33:30.833Z"
+    },
+    {
+      "id": "1783809293204",
+      "clientNumber": "GLP-Q26-002",
+      "firstName": "jahan",
+      "lastName": "perina",
+      "email": "cikwush@gmail.com",
+      "phone": "jahanperina1@gmail.com",
+      "password": "$2b$10$j7NaM3tQuZavfy2XGInOA.9zHKETU2/20CwuyhPyVtXxBKnzgGV.K",
+      "destination": "GLP",
+      "createdAt": "2026-07-11T22:34:53.204Z"
+    },
+    {
+      "id": "1784284254012",
+      "clientNumber": "MTQ-DUZ-003",
+      "firstName": "Jahan",
+      "lastName": "Perina",
+      "email": "jahan.test@caribbean.supply",
+      "phone": "+596696191509",
+      "password": "$2b$10$rzte4nw4J33I.Cf9Ogtq5O1geZbr8X0iQ7DQ8c1UjbjbFAATdvIdi",
+      "destination": "MTQ",
+      "createdAt": "2026-07-17T10:30:54.012Z"
+    },
+    {
+      "id": "1784293059745",
+      "clientNumber": "MTQ-HNN-004",
+      "firstName": "Jahan",
+      "lastName": "Perina 2",
+      "email": "jahan2@caribbean.test",
+      "phone": "+596 696 19 15 09",
+      "password": "$2b$10$r7qnS44RdcZsweXD01CTVO9TUPiqc4so3aE8O3YcA85ZrmNujseea",
+      "destination": "MTQ",
+      "createdAt": "2026-07-17T12:57:39.745Z"
+    },
+    {
+      "id": "1784294047168",
+      "clientNumber": "MTQ-Y5B-005",
+      "firstName": "Pierre",
+      "lastName": "Martin",
+      "email": "pierre@test.com",
+      "phone": "+596 696 11 22 33",
+      "password": "$2b$10$nU3RjhhJNgT9OKxR6oVrtuSHQw.KUSTxX5eTq/8OETvrnNa1zv/SO",
+      "destination": "MTQ",
+      "createdAt": "2026-07-17T13:14:07.168Z"
+    }
+  ],
+  "lastNumbers": {
+    "GLOBAL": 5
+  }
+}

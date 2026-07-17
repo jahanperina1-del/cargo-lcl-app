@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact — Caribbean Supply</title>
+<meta name="description" content="Contactez Caribbean Supply : WhatsApp +596 696 19 15 09, e-mail et formulaire. Réponse rapide pour vos expéditions Chine → Antilles." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+.page-hero { background: radial-gradient(800px 400px at 88% 0%, rgba(37,211,102,.16), transparent 60%), linear-gradient(160deg, #15264A, #0C1A33); color: #fff; padding: clamp(40px,6vw,68px) 0 clamp(80px,9vw,120px); }
+.page-hero h1 { color: #fff; }
+.page-hero .lead { color: #B9C8E2; max-width: 44ch; }
+.breadcrumb { display: flex; gap: 8px; align-items: center; color: #8FA2C2; font-size: 0.88rem; margin-bottom: 20px; }
+.breadcrumb a { color: var(--turq-400); } .breadcrumb svg { width: 14px; height: 14px; }
+
+.contact-wrap { margin-top: -80px; position: relative; z-index: 2; padding-bottom: clamp(60px,8vw,100px); }
+.contact-grid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 26px; align-items: start; }
+@media (max-width: 900px) { .contact-grid { grid-template-columns: 1fr; } }
+
+/* WhatsApp priority card */
+.wa-card {
+  background: linear-gradient(150deg, #0FB254, #128C7E);
+  color: #fff; border-radius: var(--r-xl); padding: 34px; box-shadow: 0 24px 60px rgba(18,140,126,.35);
+  position: relative; overflow: hidden;
+}
+.wa-card::after { content: ""; position: absolute; right: -40px; bottom: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,.08); }
+.wa-card .wa-ic { width: 64px; height: 64px; border-radius: 18px; background: rgba(255,255,255,.16); display: grid; place-items: center; margin-bottom: 20px; }
+.wa-card .wa-ic svg { width: 36px; height: 36px; color: #fff; }
+.wa-card h2 { color: #fff; font-size: 1.6rem; }
+.wa-card p { color: rgba(255,255,255,.9); }
+.wa-number { font-family: var(--font-display); font-weight: 700; font-size: 1.7rem; letter-spacing: .02em; margin: 16px 0 22px; }
+.wa-card .btn-white { background: #fff; color: #0c8f49; box-shadow: 0 10px 26px rgba(0,0,0,.16); }
+.wa-card .btn-white:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(0,0,0,.24); }
+.wa-card .resp { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 0.88rem; color: rgba(255,255,255,.9); }
+.wa-card .resp .dot { width: 9px; height: 9px; border-radius: 50%; background: #B7FFCB; box-shadow: 0 0 0 0 rgba(183,255,203,.7); animation: livePulse 2s infinite; }
+@keyframes livePulse { 0%{box-shadow:0 0 0 0 rgba(183,255,203,.6);} 70%{box-shadow:0 0 0 10px rgba(183,255,203,0);} 100%{box-shadow:0 0 0 0 rgba(183,255,203,0);} }
+
+.contact-methods { margin-top: 18px; display: grid; gap: 12px; }
+.method { display: flex; gap: 16px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 18px 20px; box-shadow: var(--sh-sm); transition: transform .22s, box-shadow .22s; }
+.method:hover { transform: translateY(-3px); box-shadow: var(--sh-md); }
+.method .ic { width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center; background: linear-gradient(150deg, rgba(22,198,192,.14), rgba(31,56,100,.08)); color: var(--navy-700); flex-shrink: 0; }
+.method .ic svg { width: 23px; height: 23px; }
+.method .l { font-size: 0.8rem; color: var(--slate); } .method .v { font-weight: 700; color: var(--navy-700); }
+
+/* form */
+.form-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--sh-lg); padding: clamp(24px,3vw,38px); }
+.form-card h2 { font-size: 1.4rem; }
+.ok-msg { display: none; background: rgba(22,198,192,.10); border: 1px solid rgba(22,198,192,.3); color: var(--turq-600); padding: 14px 16px; border-radius: var(--r-md); font-weight: 600; margin-bottom: 18px; }
+.ok-msg.show { display: block; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span><span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span></a>
+    <nav class="nav-links">
+      <a href="comment-ca-marche.html">Comment ça marche</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="simulateur.html">Simulateur</a>
+      <a href="espace-client.html">Espace client</a>
+      <a href="contact.html" class="active">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="simulateur.html" class="btn btn-primary nav-cta-keep">Simuler mon devis</a>
+      <button class="nav-toggle" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="index.html">Accueil</a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg><span>Contact</span></div>
+    <span class="eyebrow on-dark">Parlons de votre projet</span>
+    <h1 style="margin-top:14px">Une question ? On vous répond vite.</h1>
+    <p class="lead">Le plus simple, c'est WhatsApp : envoyez-nous un message et obtenez une réponse rapide pour vos expéditions ou votre sourcing.</p>
+  </div>
+</section>
+
+<section class="contact-wrap">
+  <div class="wrap contact-grid">
+    <!-- LEFT : WhatsApp priority + methods -->
+    <div>
+      <div class="wa-card reveal">
+        <div class="wa-ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.07-1-.28-.1-.48-.15-.68.15s-.78 1-.96 1.2c-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.51l-.58-.01c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.8-.73 2.05-1.44.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.1.8.83-3-.2-.31A8.2 8.2 0 1 1 12 20.2Z"/></svg></div>
+        <h2>Écrivez-nous sur WhatsApp</h2>
+        <p>La voie la plus rapide pour un devis, un suivi ou une demande de sourcing.</p>
+        <div class="wa-number">+596 696 19 15 09</div>
+        <a href="https://wa.me/596696191509?text=Bonjour%20Caribbean%20Supply%2C%20j'aurais%20une%20question." class="btn btn-white btn-lg" target="_blank" rel="noopener">Ouvrir WhatsApp</a>
+        <div class="resp"><span class="dot"></span> Réponse en général sous quelques heures</div>
+      </div>
+
+      <div class="contact-methods reveal d1">
+        <a class="method" href="mailto:contact@caribbeansupply.fr">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+          <span><span class="l">E-mail</span><br /><span class="v">contact@caribbeansupply.fr</span></span>
+        </a>
+        <div class="method">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="11" r="3"/><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></span>
+          <span><span class="l">Zone desservie</span><br /><span class="v">Martinique · Guadeloupe · Guyane</span></span>
+        </div>
+        <div class="method">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <span><span class="l">Disponibilité</span><br /><span class="v">Lun – Sam · 8h – 19h (heure Antilles)</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT : form -->
+    <div class="form-card reveal d1">
+      <h2>Ou laissez-nous un message</h2>
+      <p class="muted">Remplissez ce formulaire, votre message s'ouvrira dans votre messagerie ou sur WhatsApp.</p>
+      <div class="ok-msg" id="okMsg">Merci ! Votre message est prêt à être envoyé.</div>
+      <form id="contactForm">
+        <div class="field-row">
+          <div class="field"><label for="cName">Nom complet</label><input class="input" id="cName" required placeholder="Marie Joseph" /></div>
+          <div class="field"><label for="cPhone">Téléphone</label><input class="input" id="cPhone" type="tel" placeholder="+596 696 …" /></div>
+        </div>
+        <div class="field"><label for="cEmail">E-mail</label><input class="input" id="cEmail" type="email" placeholder="vous@exemple.com" /></div>
+        <div class="field">
+          <label for="cSubject">Sujet</label>
+          <select class="select" id="cSubject">
+            <option>Demande de devis</option>
+            <option>Service sourcing (100€)</option>
+            <option>Suivi d'une expédition</option>
+            <option>Question générale</option>
+          </select>
+        </div>
+        <div class="field"><label for="cMsg">Votre message</label><textarea class="input" id="cMsg" rows="5" placeholder="Décrivez votre besoin…"></textarea></div>
+        <div class="flex gap-12 wrap-flex">
+          <button type="submit" class="btn btn-accent btn-lg" style="flex:1;min-width:180px">Envoyer par e-mail</button>
+          <button type="button" id="sendWa" class="btn btn-wa btn-lg" style="flex:1;min-width:180px">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.07-1-.28-.1-.48-.15-.68.15s-.78 1-.96 1.2c-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.51l-.58-.01c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.8-.73 2.05-1.44.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/></svg>
+            Envoyer sur WhatsApp
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span><span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span></a>
+        <p>Transport cargo maritime LCL et sourcing entre la Chine et les Antilles françaises.</p>
+      </div>
+      <div class="footer-col"><h4>Services</h4><a href="simulateur.html">Simulateur de devis</a><a href="sourcing.html">Service sourcing</a><a href="comment-ca-marche.html">Comment ça marche</a><a href="espace-client.html">Espace client</a></div>
+      <div class="footer-col"><h4>Destinations</h4><a href="simulateur.html"><span class="flag-mq" role="img" aria-label="Drapeau de la Martinique"></span> Martinique</a><a href="simulateur.html">🇬🇵 Guadeloupe</a><a href="simulateur.html">🇬🇫 Guyane</a></div>
+      <div class="footer-col"><h4>Contact</h4><a href="https://wa.me/596696191509" target="_blank" rel="noopener">WhatsApp · +596 696 19 15 09</a><a href="mailto:contact@caribbeansupply.fr">contact@caribbeansupply.fr</a><a href="contact.html">Page contact</a></div>
+    </div>
+    <div class="footer-bottom"><span>© <span data-year>2026</span> Caribbean Supply — Tous droits réservés.</span><span>Groupage LCL · 380€ HT/CBM · Sourcing 100€</span></div>
+  </div>
+</footer>
+
+<div class="wa-float">
+  <span class="wa-tip">Une question ? Écrivez-nous</span>
+  <a href="https://wa.me/596696191509" target="_blank" rel="noopener" aria-label="Contacter sur WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.07-1-.28-.1-.48-.15-.68.15s-.78 1-.96 1.2c-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.51l-.58-.01c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.8-.73 2.05-1.44.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.1.8.83-3-.2-.31A8.2 8.2 0 1 1 12 20.2Z"/></svg></a>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  function val(id) { return (document.getElementById(id).value || "").trim(); }
+  function build() {
+    var lines = [];
+    lines.push("Bonjour Caribbean Supply,");
+    lines.push("Sujet : " + val("cSubject"));
+    if (val("cName")) lines.push("Nom : " + val("cName"));
+    if (val("cPhone")) lines.push("Téléphone : " + val("cPhone"));
+    if (val("cEmail")) lines.push("E-mail : " + val("cEmail"));
+    lines.push("");
+    lines.push(val("cMsg") || "(votre message)");
+    return lines.join("\n");
+  }
+  document.getElementById("contactForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var subject = "[Site] " + val("cSubject") + (val("cName") ? " — " + val("cName") : "");
+    window.location.href = "mailto:contact@caribbeansupply.fr?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(build());
+    document.getElementById("okMsg").classList.add("show");
+  });
+  document.getElementById("sendWa").addEventListener("click", function () {
+    window.open("https://wa.me/596696191509?text=" + encodeURIComponent(build()), "_blank");
+    document.getElementById("okMsg").classList.add("show");
+  });
+})();
+</script>
+</body>
+</html>

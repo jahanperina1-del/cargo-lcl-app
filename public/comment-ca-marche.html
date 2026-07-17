@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Comment ça marche — Caribbean Supply</title>
+<meta name="description" content="De votre commande en Chine à la livraison aux Antilles : les 4 étapes du transport maritime LCL Caribbean Supply." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+.page-hero { background: radial-gradient(800px 400px at 88% 0%, rgba(22,198,192,.14), transparent 60%), linear-gradient(160deg, #15264A, #0C1A33); color: #fff; padding: clamp(40px,6vw,72px) 0 clamp(44px,6vw,72px); }
+.page-hero h1 { color: #fff; max-width: 20ch; }
+.page-hero .lead { color: #B9C8E2; }
+.breadcrumb { display: flex; gap: 8px; align-items: center; color: #8FA2C2; font-size: 0.88rem; margin-bottom: 20px; }
+.breadcrumb a { color: var(--turq-400); }
+.breadcrumb svg { width: 14px; height: 14px; }
+
+/* journey track */
+.journey { background: var(--paper); }
+.track {
+  position: relative;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;
+  margin-bottom: 14px;
+}
+.track-line {
+  position: absolute; left: 6%; right: 6%; top: 46px; height: 4px;
+  background: var(--line-strong); border-radius: 4px; z-index: 0;
+}
+.track-line i {
+  display: block; height: 100%; width: 0; border-radius: 4px;
+  background: linear-gradient(90deg, var(--turq-500), var(--orange-500));
+  transition: width 1.4s cubic-bezier(.3,.7,.3,1);
+}
+.track-box {
+  position: absolute; top: 30px; left: 6%; z-index: 3;
+  width: 34px; height: 34px; transition: left 1.4s cubic-bezier(.3,.7,.3,1);
+}
+.track-box svg { width: 34px; height: 34px; filter: drop-shadow(0 6px 14px rgba(255,122,61,.45)); }
+.track-box.bob { animation: bob 1.2s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0) rotate(-2deg);} 50%{transform:translateY(-5px) rotate(2deg);} }
+
+.node { position: relative; z-index: 2; text-align: center; }
+.node-dot {
+  width: 96px; height: 96px; margin: 0 auto 16px; border-radius: 26px;
+  background: #fff; border: 2px solid var(--line-strong);
+  display: grid; place-items: center; transition: all .5s cubic-bezier(.3,.7,.3,1);
+  box-shadow: var(--sh-sm); position: relative;
+}
+.node-dot svg { width: 42px; height: 42px; color: var(--slate); transition: color .5s; }
+.node-dot .idx {
+  position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--navy-700); color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 0.92rem;
+  display: grid; place-items: center; box-shadow: var(--sh-sm);
+}
+.node.on .node-dot { border-color: var(--turq-500); background: linear-gradient(160deg, rgba(22,198,192,.10), #fff); box-shadow: var(--sh-md); transform: translateY(-4px); }
+.node.on .node-dot svg { color: var(--turq-600); }
+.node.on .node-dot .idx { background: var(--orange-500); }
+.node h3 { font-size: 1.12rem; margin-bottom: 6px; }
+.node p { color: var(--slate); font-size: 0.95rem; margin-bottom: 0; max-width: 24ch; margin-inline: auto; }
+
+@media (max-width: 860px) {
+  .track { grid-template-columns: 1fr; gap: 0; }
+  .track-line { left: 47px; right: auto; top: 0; bottom: 0; width: 4px; height: auto; }
+  .track-line i { width: 100% !important; height: 0; transition: height 1.4s cubic-bezier(.3,.7,.3,1); }
+  .track-box { display: none; }
+  .node { display: grid; grid-template-columns: auto 1fr; gap: 20px; text-align: left; align-items: center; padding: 14px 0; }
+  .node-dot { margin: 0; width: 80px; height: 80px; }
+  .node h3, .node p { margin-inline: 0; max-width: none; }
+  .node p { text-align: left; }
+}
+
+/* detail cards */
+.detail-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 22px; }
+@media (max-width: 760px) { .detail-grid { grid-template-columns: 1fr; } }
+.detail-card { display: grid; grid-template-columns: auto 1fr; gap: 18px; }
+.detail-card .ic { width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(150deg, rgba(22,198,192,.14), rgba(31,56,100,.08)); color: var(--navy-700); flex-shrink: 0; }
+.detail-card .ic svg { width: 26px; height: 26px; }
+.detail-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
+.detail-card p { margin-bottom: 0; color: var(--slate); font-size: 0.95rem; }
+.detail-card .tag { display: inline-block; margin-top: 10px; font-size: 0.8rem; font-weight: 700; color: var(--turq-600); }
+
+.cta-band { background: radial-gradient(700px 400px at 85% 20%, rgba(22,198,192,.18), transparent 60%), linear-gradient(150deg, var(--navy-700), var(--navy-900)); color: #fff; border-radius: var(--r-xl); padding: clamp(40px,6vw,64px); display: grid; grid-template-columns: 1.4fr auto; gap: 32px; align-items: center; box-shadow: var(--sh-lg); }
+.cta-band h2 { color: #fff; } .cta-band p { color: #BCD; margin-bottom: 0; }
+.cta-band .actions { display: flex; flex-direction: column; gap: 12px; }
+@media (max-width: 760px) { .cta-band { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span><span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span></a>
+    <nav class="nav-links">
+      <a href="comment-ca-marche.html" class="active">Comment ça marche</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="simulateur.html">Simulateur</a>
+      <a href="espace-client.html">Espace client</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="simulateur.html" class="btn btn-primary nav-cta-keep">Simuler mon devis</a>
+      <button class="nav-toggle" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="index.html">Accueil</a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg><span>Comment ça marche</span></div>
+    <span class="eyebrow on-dark">Le parcours de votre colis</span>
+    <h1 style="margin-top:14px">De la Chine à votre porte, en toute simplicité</h1>
+    <p class="lead">Quatre étapes claires, un suivi à chaque instant. Voici comment votre marchandise voyage jusqu'aux Antilles.</p>
+  </div>
+</section>
+
+<!-- ANIMATED JOURNEY -->
+<section class="section journey">
+  <div class="wrap">
+    <div class="track" id="track">
+      <div class="track-line"><i id="trackFill"></i></div>
+      <div class="track-box" id="trackBox">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5Z" fill="#FF7A3D" stroke="#F2691F" stroke-width="1"/><path d="M3 8.5 12 13l9-4.5M12 13v7" stroke="#fff" stroke-width="1" opacity=".7"/></svg>
+      </div>
+
+      <div class="node" data-node>
+        <div class="node-dot"><span class="idx">1</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg></div>
+        <div><h3>Vous commandez</h3><p>Sur Alibaba/1688, ou via notre sourcing.</p></div>
+      </div>
+      <div class="node" data-node>
+        <div class="node-dot"><span class="idx">2</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M3 9 5 4h14l2 5M12 4v5M8 13h2"/></svg></div>
+        <div><h3>Réception & groupage</h3><p>Tout arrive à notre entrepôt de Guangzhou.</p></div>
+      </div>
+      <div class="node" data-node>
+        <div class="node-dot"><span class="idx">3</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 5 11h14l2 6"/><path d="M2.5 17h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4l5 2.5"/></svg></div>
+        <div><h3>Traversée maritime</h3><p>Départ en conteneur LCL vers votre île.</p></div>
+      </div>
+      <div class="node" data-node>
+        <div class="node-dot"><span class="idx">4</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v10H3z"/><path d="M16 10h3l2 3v4h-5z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></div>
+        <div><h3>Livraison aux Antilles</h3><p>Retrait entrepôt ou livraison à domicile.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DETAILS -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">En détail</span>
+      <h2 style="margin-top:14px">Ce qui se passe à chaque étape</h2>
+    </div>
+    <div class="detail-grid">
+      <article class="card detail-card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg></div>
+        <div><h3>1 · Votre commande</h3><p>Vous achetez directement sur Alibaba ou 1688 en faisant livrer à notre adresse en Chine, ou vous nous confiez le sourcing. On vous communique l'adresse entrepôt et votre numéro client.</p><span class="tag">Adresse entrepôt fournie</span></div>
+      </article>
+      <article class="card detail-card reveal d1">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="1"/><path d="M3 8 6 4h12l3 4M8 12h8"/></svg></div>
+        <div><h3>2 · Entrepôt & groupage</h3><p>Nous réceptionnons vos colis, les contrôlons, les regroupons avec d'autres marchandises et optimisons l'espace pour vous faire payer le moins de volume possible.</p><span class="tag">Contrôle & consolidation</span></div>
+      </article>
+      <article class="card detail-card reveal d2">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16h20M4 16 6 9h12l2 7M12 9V3l5 2.5"/></svg></div>
+        <div><h3>3 · Expédition maritime</h3><p>Le conteneur prend la mer vers la Martinique, la Guadeloupe ou la Guyane. Vous suivez l'avancement depuis votre espace client, du départ à l'arrivée au port.</p><span class="tag">~60 jours en moyenne</span></div>
+      </article>
+      <article class="card detail-card reveal d3">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v10H3z"/><path d="M16 10h3l2 3v4h-5z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></div>
+        <div><h3>4 · Réception sur l'île</h3><p>Une fois dédouané, vous récupérez votre colis à notre point de retrait ou vous optez pour la livraison à domicile. On vous prévient dès qu'il est disponible.</p><span class="tag">Retrait ou livraison</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <div>
+        <span class="eyebrow on-dark">À vous de jouer</span>
+        <h2 style="margin-top:14px">Estimez votre premier envoi</h2>
+        <p>Quelques dimensions suffisent pour connaître votre prix. Sans engagement.</p>
+      </div>
+      <div class="actions">
+        <a href="simulateur.html" class="btn btn-accent btn-block btn-lg">Lancer le simulateur</a>
+        <a href="espace-client.html" class="btn btn-ghost-dark btn-block">Créer mon espace client</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span><span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span></a>
+        <p>Transport cargo maritime LCL et sourcing entre la Chine et les Antilles françaises.</p>
+      </div>
+      <div class="footer-col"><h4>Services</h4><a href="simulateur.html">Simulateur de devis</a><a href="sourcing.html">Service sourcing</a><a href="comment-ca-marche.html">Comment ça marche</a><a href="espace-client.html">Espace client</a></div>
+      <div class="footer-col"><h4>Destinations</h4><a href="simulateur.html"><span class="flag-mq" role="img" aria-label="Drapeau de la Martinique"></span> Martinique</a><a href="simulateur.html">🇬🇵 Guadeloupe</a><a href="simulateur.html">🇬🇫 Guyane</a></div>
+      <div class="footer-col"><h4>Contact</h4><a href="https://wa.me/596696191509" target="_blank" rel="noopener">WhatsApp · +596 696 19 15 09</a><a href="mailto:contact@caribbeansupply.fr">contact@caribbeansupply.fr</a><a href="contact.html">Page contact</a></div>
+    </div>
+    <div class="footer-bottom"><span>© <span data-year>2026</span> Caribbean Supply — Tous droits réservés.</span><span>Groupage LCL · 380€ HT/CBM · Sourcing 100€</span></div>
+  </div>
+</footer>
+
+<div class="wa-float">
+  <span class="wa-tip">Une question ? Écrivez-nous</span>
+  <a href="https://wa.me/596696191509" target="_blank" rel="noopener" aria-label="Contacter sur WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.07-1-.28-.1-.48-.15-.68.15s-.78 1-.96 1.2c-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.51l-.58-.01c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.8-.73 2.05-1.44.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.1.8.83-3-.2-.31A8.2 8.2 0 1 1 12 20.2Z"/></svg></a>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var track = document.getElementById("track");
+  var nodes = track.querySelectorAll("[data-node]");
+  var fill = document.getElementById("trackFill");
+  var box = document.getElementById("trackBox");
+  var played = false;
+  var positions = [6, 35, 64, 92]; // % across for box on desktop
+
+  function isMobile() { return window.matchMedia("(max-width: 860px)").matches; }
+
+  function play() {
+    if (played) return; played = true;
+    box.classList.add("bob");
+    var i = 0;
+    function step() {
+      if (i >= nodes.length) { box.classList.remove("bob"); return; }
+      nodes[i].classList.add("on");
+      var pct = (i) / (nodes.length - 1);
+      if (isMobile()) {
+        fill.style.height = (pct * 100) + "%";
+      } else {
+        fill.style.width = (pct * 100) + "%";
+        box.style.left = positions[i] + "%";
+      }
+      i++;
+      setTimeout(step, 900);
+    }
+    step();
+  }
+
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (en) {
+      en.forEach(function (e) { if (e.isIntersecting) { play(); io.disconnect(); } });
+    }, { threshold: 0.4 });
+    io.observe(track);
+  } else { play(); }
+})();
+</script>
+</body>
+</html>

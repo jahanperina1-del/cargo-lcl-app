@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Caribbean Supply</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #0a1219;
+      color: white;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 250px;
+      height: 100vh;
+      background: linear-gradient(135deg, #0f1e3c 0%, #1a2a4a 100%);
+      border-right: 1px solid rgba(6, 182, 212, 0.2);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .logo {
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
+    .logo h2 {
+      color: #06b6d4;
+      font-size: 1.3em;
+      margin-bottom: 5px;
+    }
+
+    .logo p {
+      font-size: 0.8em;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .nav-menu {
+      list-style: none;
+    }
+
+    .nav-item {
+      margin-bottom: 10px;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: rgba(6, 182, 212, 0.2);
+      color: #06b6d4;
+    }
+
+    .logout-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      padding: 10px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 30px;
+    }
+
+    .header {
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2em;
+      color: #06b6d4;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-card h3 {
+      font-size: 0.9em;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .stat-card .value {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #06b6d4;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(10px);
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .section h2 {
+      font-size: 1.5em;
+      color: #06b6d4;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: rgba(6, 182, 212, 0.1);
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #06b6d4;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid rgba(6, 182, 212, 0.2);
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(6, 182, 212, 0.1);
+    }
+
+    tbody tr:hover {
+      background: rgba(6, 182, 212, 0.1);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: 600;
+    }
+
+    .badge-paid {
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+    }
+
+    .badge-pending {
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+    }
+
+    .badge-mtq {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+
+    .badge-glp {
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+    }
+
+    .badge-guy {
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      background: rgba(6, 182, 212, 0.2);
+      border: 1px solid rgba(6, 182, 212, 0.5);
+      color: #06b6d4;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8em;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .action-btn:hover {
+      background: rgba(6, 182, 212, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .nav-menu {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        margin-bottom: 20px;
+      }
+
+      .nav-item {
+        flex-shrink: 0;
+      }
+
+      .logout-btn {
+        position: static;
+        margin-top: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <h2>🔐 Admin</h2>
+      <p>Caribbean Supply</p>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a class="nav-link active" onclick="switchTab('dashboard')">📊 Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" onclick="switchTab('clients')">👥 Clients</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" onclick="switchTab('paiements')">💳 Paiements</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" onclick="switchTab('conteneurs')">📦 Conteneurs</a>
+      </li>
+    </ul>
+
+    <button class="logout-btn" onclick="logout()">🚪 Déconnexion</button>
+  </div>
+
+  <div class="main-content">
+    <!-- Dashboard -->
+    <section id="dashboard" class="section active">
+      <div class="header">
+        <h1>📊 Dashboard</h1>
+        <p>Résumé général de ton activité</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Clients Payés</h3>
+          <div class="value" id="stat-clients">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Montant Total</h3>
+          <div class="value"><span id="stat-amount">0</span>€</div>
+        </div>
+        <div class="stat-card">
+          <h3>Conteneurs Actifs</h3>
+          <div class="value" id="stat-containers">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Taux Utilisation</h3>
+          <div class="value"><span id="stat-utilization">0</span>%</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="stat-card">
+          <h3>🇲🇶 Martinique</h3>
+          <div style="font-size: 1.5em; color: #06b6d4; margin-top: 10px;">
+            <div id="stat-mtq">0 clients</div>
+            <div style="font-size: 0.8em; color: rgba(255,255,255,0.5); margin-top: 5px;" id="stat-mtq-amount">0€</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <h3>🇬🇵 Guadeloupe</h3>
+          <div style="font-size: 1.5em; color: #06b6d4; margin-top: 10px;">
+            <div id="stat-glp">0 clients</div>
+            <div style="font-size: 0.8em; color: rgba(255,255,255,0.5); margin-top: 5px;" id="stat-glp-amount">0€</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <h3>🇬🇫 Guyane</h3>
+          <div style="font-size: 1.5em; color: #06b6d4; margin-top: 10px;">
+            <div id="stat-guy">0 clients</div>
+            <div style="font-size: 0.8em; color: rgba(255,255,255,0.5); margin-top: 5px;" id="stat-guy-amount">0€</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Clients -->
+    <section id="clients" class="section">
+      <h2>👥 Tous les Clients</h2>
+      <div id="clients-loading" class="loading">Chargement...</div>
+      <div id="clients-content" style="display: none;">
+        <table>
+          <thead>
+            <tr>
+              <th>N° Client</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Destination</th>
+              <th>CBM</th>
+              <th>Montant (€)</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="clients-table">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Paiements -->
+    <section id="paiements" class="section">
+      <h2>💳 Suivi des Paiements</h2>
+      <div id="paiements-loading" class="loading">Chargement...</div>
+      <div id="paiements-content" style="display: none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>N° Client</th>
+              <th>Nom</th>
+              <th>Montant (€)</th>
+              <th>Destination</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="paiements-table">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Conteneurs -->
+    <section id="conteneurs" class="section">
+      <h2>📦 État des Conteneurs</h2>
+      <div id="conteneurs-loading" class="loading">Chargement...</div>
+      <div id="conteneurs-content" style="display: none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Destination</th>
+              <th>Conteneur</th>
+              <th>Remplissage</th>
+              <th>CBM</th>
+              <th>Clients</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="conteneurs-table">
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Vérifier l'authentification
+    if (sessionStorage.getItem('admin_session') !== 'true') {
+      window.location.href = '/admin-login'
+    }
+
+    function switchTab(tab) {
+      // Masquer tous les sections
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'))
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'))
+
+      // Afficher la section sélectionnée
+      document.getElementById(tab).classList.add('active')
+      event.target.classList.add('active')
+
+      // Charger les données si nécessaire
+      if (tab === 'clients') loadClients()
+      else if (tab === 'paiements') loadPaiements()
+      else if (tab === 'conteneurs') loadConteneurs()
+      else if (tab === 'dashboard') loadDashboard()
+    }
+
+    async function loadDashboard() {
+      try {
+        const [clientsRes, containerRes] = await Promise.all([
+          fetch('/api/clients'),
+          fetch('/api/container-tracking')
+        ])
+
+        const clients = await clientsRes.json()
+        const containers = await containerRes.json()
+
+        // Mettre à jour les stats
+        document.getElementById('stat-clients').textContent = clients.totalClients
+        document.getElementById('stat-amount').textContent = clients.totalAmount.toFixed(2)
+        document.getElementById('stat-containers').textContent = containers.summary.totalContainers
+        document.getElementById('stat-utilization').textContent = containers.summary.totalUtilization.toFixed(1)
+
+        // Stats par destination
+        document.getElementById('stat-mtq').innerHTML = `${clients.byDestination.martinique.length} clients`
+        document.getElementById('stat-mtq-amount').innerHTML = `${clients.byDestination.martinique.reduce((sum, c) => sum + c.amount, 0).toFixed(2)}€`
+
+        document.getElementById('stat-glp').innerHTML = `${clients.byDestination.guadeloupe.length} clients`
+        document.getElementById('stat-glp-amount').innerHTML = `${clients.byDestination.guadeloupe.reduce((sum, c) => sum + c.amount, 0).toFixed(2)}€`
+
+        document.getElementById('stat-guy').innerHTML = `${clients.byDestination.guyane.length} clients`
+        document.getElementById('stat-guy-amount').innerHTML = `${clients.byDestination.guyane.reduce((sum, c) => sum + c.amount, 0).toFixed(2)}€`
+      } catch (error) {
+        console.error('Erreur dashboard:', error)
+      }
+    }
+
+    async function loadClients() {
+      try {
+        const response = await fetch('/api/clients')
+        const data = await response.json()
+
+        const tbody = document.getElementById('clients-table')
+        tbody.innerHTML = data.clients.map(client => {
+          const destClass = client.destination === 'Martinique' ? 'badge-mtq' :
+                           client.destination === 'Guadeloupe' ? 'badge-glp' : 'badge-guy'
+          return `
+            <tr>
+              <td><strong>${client.id}</strong></td>
+              <td>${client.name}</td>
+              <td>${client.email || '-'}</td>
+              <td><span class="badge ${destClass}">${client.destination}</span></td>
+              <td>${client.cbm.toFixed(2)}</td>
+              <td><strong>${client.amount.toFixed(2)}€</strong></td>
+              <td><span class="badge badge-paid">✓ Payé</span></td>
+            </tr>
+          `
+        }).join('')
+
+        document.getElementById('clients-loading').style.display = 'none'
+        document.getElementById('clients-content').style.display = 'block'
+      } catch (error) {
+        console.error('Erreur clients:', error)
+      }
+    }
+
+    async function loadPaiements() {
+      try {
+        const response = await fetch('/api/clients')
+        const data = await response.json()
+
+        const tbody = document.getElementById('paiements-table')
+        tbody.innerHTML = data.clients.map(client => `
+          <tr>
+            <td>${client.paymentDate || new Date().toLocaleString('fr-FR')}</td>
+            <td>${client.id}</td>
+            <td>${client.name}</td>
+            <td><strong>${client.amount.toFixed(2)}€</strong></td>
+            <td>${client.destination}</td>
+            <td><span class="badge badge-paid">✓ Payé</span></td>
+          </tr>
+        `).join('')
+
+        document.getElementById('paiements-loading').style.display = 'none'
+        document.getElementById('paiements-content').style.display = 'block'
+      } catch (error) {
+        console.error('Erreur paiements:', error)
+      }
+    }
+
+    async function loadConteneurs() {
+      try {
+        const response = await fetch('/api/container-tracking')
+        const data = await response.json()
+
+        const tbody = document.getElementById('conteneurs-table')
+        tbody.innerHTML = data.containers.map(container => `
+          <tr>
+            <td>${container.destination}</td>
+            <td>${container.id}</td>
+            <td>
+              <div style="width: 100px; height: 20px; background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden;">
+                <div style="width: ${Math.min(100, container.fillPercentage)}%; height: 100%; background: linear-gradient(90deg, #06b6d4, #0891b2);"></div>
+              </div>
+              <div style="font-size: 0.8em; margin-top: 5px;">${container.fillPercentage.toFixed(1)}%</div>
+            </td>
+            <td>${container.currentLoad.toFixed(2)} / ${container.capacity}</td>
+            <td>${container.paidClients.length}</td>
+            <td><span class="badge ${container.status === 'plein' ? 'badge-paid' : 'badge-pending'}">${container.status}</span></td>
+          </tr>
+        `).join('')
+
+        document.getElementById('conteneurs-loading').style.display = 'none'
+        document.getElementById('conteneurs-content').style.display = 'block'
+      } catch (error) {
+        console.error('Erreur conteneurs:', error)
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('admin_session')
+      window.location.href = '/admin-login'
+    }
+
+    // Charger le dashboard au démarrage
+    loadDashboard()
+  </script>
+</body>
+</html>

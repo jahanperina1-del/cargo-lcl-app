@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Caribbean Supply — Vos achats de Chine livrés aux Antilles</title>
+<meta name="description" content="Transport cargo maritime LCL Chine → Martinique, Guadeloupe, Guyane. Sourcing, groupage et expédition. 380€ HT/CBM." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<meta name="ext-resource-dependency" content="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json" data-resource-id="worldAtlas" />
+<style>
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  background:
+    radial-gradient(1200px 600px at 78% 8%, rgba(22,198,192,.16), transparent 60%),
+    radial-gradient(900px 500px at 10% 90%, rgba(255,122,61,.12), transparent 55%),
+    linear-gradient(160deg, #15264A 0%, #0C1A33 60%, #0A1730 100%);
+  color: #fff;
+  overflow: hidden;
+  padding-top: clamp(36px, 6vw, 64px);
+  padding-bottom: clamp(40px, 6vw, 70px);
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.02fr 1.18fr;
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+}
+.hero h1 { color: #fff; }
+.hero h1 .grad {
+  background: linear-gradient(100deg, var(--turq-400), var(--orange-400));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero .lead { color: #B9C8E2; max-width: 46ch; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+.hero-trust { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 30px; }
+.hero-trust .t { display: inline-flex; align-items: center; gap: 9px; color: #AFC0DD; font-size: 0.9rem; font-weight: 600; }
+.hero-trust .t svg { width: 18px; height: 18px; color: var(--turq-400); }
+.route-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.route-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 15px 8px 12px; border-radius: var(--r-pill);
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+  font-weight: 600; font-size: 0.9rem; color: #E6EDF8;
+}
+.route-chip .flag { font-size: 1.05rem; line-height: 1; }
+
+/* ---------- HUD Map ---------- */
+.hero-map {
+  position: relative;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #0a1838 0%, #060e22 55%, #04091a 100%);
+  border: 1px solid rgba(80,150,230,.22);
+  box-shadow: 0 30px 80px rgba(2,8,22,.6), inset 0 0 60px rgba(10,30,70,.5), inset 0 0 0 1px rgba(80,150,230,.06);
+  aspect-ratio: 1200 / 660;
+}
+.hero-map svg.map-svg { display: block; width: 100%; height: 100%; position: absolute; inset: 0; }
+
+/* map layers */
+.mp-graticule { fill: none; stroke: rgba(86,150,225,.10); stroke-width: .6; }
+.mp-country { fill: rgba(46,98,180,.10); stroke: none; }
+.mp-border { fill: none; stroke: rgba(96,160,235,.22); stroke-width: .5; }
+.mp-coast { fill: none; stroke: #4d9bff; stroke-width: .9; stroke-linejoin: round; filter: url(#coastGlow); opacity: .9; }
+.mp-hot { fill: rgba(56,217,210,.16); stroke: #5fe6df; stroke-width: 1; filter: url(#coastGlow); animation: hotPulse 3.4s ease-in-out infinite; }
+@keyframes hotPulse { 0%,100% { opacity: .65; } 50% { opacity: 1; } }
+
+/* network nodes */
+.node-dotpulse { fill: none; stroke: rgba(95,230,222,.7); stroke-width: 1; transform-box: fill-box; transform-origin: center; animation: nodePulse 3s ease-out infinite; }
+@keyframes nodePulse { 0% { transform: scale(.4); opacity: .8; } 100% { transform: scale(3); opacity: 0; } }
+
+/* route */
+.route-base { fill: none; stroke: rgba(120,180,240,.20); stroke-width: 1.4; stroke-dasharray: 1.5 7; stroke-linecap: round; }
+.route-glow { fill: none; stroke: url(#routeGrad); stroke-width: 2.2; stroke-linecap: round; filter: url(#routeGlowF); }
+.route-comet { fill: none; stroke: url(#routeGrad); stroke-width: 3.4; stroke-linecap: round; filter: url(#routeGlowF); }
+
+/* ports */
+.port-core { filter: url(#coastGlow); }
+.port-ring { fill: none; stroke-width: 1.6; transform-box: fill-box; transform-origin: center; }
+.port-a .port-ring { stroke: var(--orange-400); animation: portPulse 2.4s ease-out infinite; }
+.port-b .port-ring { stroke: #5fe6df; animation: portPulse 2.4s ease-out infinite; }
+.port-b.delay1 .port-ring { animation-delay: .6s; }
+.port-b.delay2 .port-ring { animation-delay: 1.2s; }
+@keyframes portPulse { 0% { transform: scale(.5); opacity: .9; } 100% { transform: scale(2.8); opacity: 0; } }
+.port-label { fill: #aee6ff; font-family: "Share Tech Mono","Space Grotesk",monospace; font-size: 14px; letter-spacing: .04em; }
+.port-label.sm { fill: #7fb8e0; font-size: 12px; }
+.port-tick { stroke: rgba(120,200,255,.5); stroke-width: 1; }
+
+/* ---- HUD overlay chrome ---- */
+.hud { position: absolute; inset: 0; pointer-events: none; font-family: "Share Tech Mono", monospace; color: #6fd5e0; }
+.hud-corner { position: absolute; width: 26px; height: 26px; border: 1.5px solid rgba(95,200,255,.45); }
+.hud-corner.tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+.hud-corner.tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+.hud-corner.bl { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+.hud-corner.br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+.hud-timer { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); text-align: center; }
+.hud-timer .lbl { font-size: 9px; letter-spacing: .34em; color: rgba(125,200,255,.65); margin-bottom: 4px; }
+.hud-timer .clk { font-size: clamp(20px, 3.4vw, 34px); letter-spacing: .12em; color: #7fe9ff; text-shadow: 0 0 12px rgba(60,180,255,.8), 0 0 2px rgba(160,230,255,.9); font-weight: 400; }
+.hud-timer .clk .sep { opacity: .5; }
+
+.hud-read { position: absolute; font-size: 10px; line-height: 1.7; letter-spacing: .06em; color: rgba(130,195,245,.62); }
+.hud-read .v { color: #8fe0ff; }
+.hud-read.l { left: 16px; top: 50%; transform: translateY(-50%); }
+.hud-read.r { right: 16px; top: 50%; transform: translateY(-50%); text-align: right; }
+.hud-read .row { white-space: nowrap; }
+.hud-tag { position: absolute; top: 16px; left: 16px; font-size: 9px; letter-spacing: .22em; color: rgba(125,200,255,.7); }
+.hud-tag .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #5fe6df; box-shadow: 0 0 8px #5fe6df; margin-right: 6px; vertical-align: middle; animation: livePulse 1.8s infinite; }
+.hud-foot { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 9px; letter-spacing: .26em; color: rgba(120,190,240,.5); white-space: nowrap; }
+.hud-scan { position: absolute; inset: 0; background: repeating-linear-gradient(180deg, rgba(120,190,255,.035) 0px, rgba(120,190,255,.035) 1px, transparent 1px, transparent 4px); mix-blend-mode: screen; }
+@keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+@media (max-width: 600px) { .hud-read, .hud-foot { display: none; } }
+
+@media (max-width: 940px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-map { order: -1; }
+}
+
+/* ---------- Stats ---------- */
+.stats { background: var(--paper); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 54px 0; }
+.stat { text-align: center; padding: 8px; position: relative; }
+.stat:not(:last-child)::after { content: ""; position: absolute; right: -10px; top: 18%; height: 64%; width: 1px; background: var(--line-strong); }
+.stat .num { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.1rem, 4.6vw, 3rem); color: var(--navy-700); line-height: 1; letter-spacing: -0.03em; }
+.stat .num .u { color: var(--orange-500); }
+.stat .lbl { margin-top: 10px; color: var(--slate); font-weight: 600; font-size: 0.96rem; }
+@media (max-width: 720px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 30px 12px; }
+  .stat:nth-child(2)::after { display: none; }
+}
+
+/* ---------- Destinations ---------- */
+.dest-card { position: relative; overflow: hidden; padding: 0; }
+.dest-top { padding: 26px 26px 0; display: flex; align-items: center; justify-content: space-between; }
+.dest-flag { font-size: 2.4rem; line-height: 1; }
+.dest-body { padding: 18px 26px 28px; }
+.dest-body h3 { margin-bottom: 6px; }
+.dest-meta { display: flex; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.dest-meta .m { font-size: 0.86rem; color: var(--slate); }
+.dest-meta .m b { display: block; color: var(--navy-700); font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
+.dest-bar { height: 5px; background: linear-gradient(90deg, var(--turq-500), var(--navy-600)); }
+.dest-card:nth-child(2) .dest-bar { background: linear-gradient(90deg, var(--orange-500), var(--navy-600)); }
+.dest-card:nth-child(3) .dest-bar { background: linear-gradient(90deg, var(--turq-500), var(--orange-500)); }
+
+/* ---------- Atouts ---------- */
+.atouts { background: var(--paper); }
+
+/* ---------- CTA band ---------- */
+.cta-band {
+  background:
+    radial-gradient(700px 400px at 85% 20%, rgba(22,198,192,.18), transparent 60%),
+    linear-gradient(150deg, var(--navy-700), var(--navy-900));
+  color: #fff; border-radius: var(--r-xl);
+  padding: clamp(40px, 6vw, 70px);
+  display: grid; grid-template-columns: 1.4fr auto; gap: 32px; align-items: center;
+  box-shadow: var(--sh-lg);
+}
+.cta-band h2 { color: #fff; }
+.cta-band p { color: #BCD; max-width: 48ch; margin-bottom: 0; }
+.cta-band .actions { display: flex; flex-direction: column; gap: 12px; }
+@media (max-width: 760px) { .cta-band { grid-template-columns: 1fr; } }
+
+/* ---------- price strip ---------- */
+.price-strip {
+  display: inline-flex; align-items: baseline; gap: 10px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
+  padding: 14px 22px; border-radius: var(--r-md); margin-top: 22px;
+}
+.price-strip .p { font-family: var(--font-display); font-weight: 700; font-size: 2rem; color: var(--turq-400); }
+.price-strip .x { color: #AFC0DD; font-size: 0.95rem; }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#0C1A33">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0C1A33"/>
+    <g fill="none" stroke="#4d9bff" stroke-width="3" opacity="0.5">
+      <line x1="0" y1="267" x2="1200" y2="267"/><line x1="0" y1="533" x2="1200" y2="533"/>
+      <line x1="400" y1="0" x2="400" y2="800"/><line x1="800" y1="0" x2="800" y2="800"/>
+    </g>
+    <path d="M250 470 Q600 200 950 360" fill="none" stroke="#FFC36B" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="250" cy="470" r="16" fill="#5fe6df"/>
+    <circle cx="950" cy="360" r="16" fill="#FFC36B"/>
+    <g transform="translate(600 286) rotate(-14)">
+      <rect x="-46" y="-8" width="92" height="30" rx="4" fill="#1F3864" stroke="#5fe6df" stroke-width="3"/>
+      <rect x="-30" y="-30" width="20" height="20" rx="2" fill="#FF7A3D"/>
+      <rect x="-6" y="-30" width="20" height="20" rx="2" fill="#16C6C0"/>
+      <rect x="18" y="-30" width="20" height="20" rx="2" fill="#E6EDF8"/>
+    </g>
+    <text x="600" y="640" text-anchor="middle" fill="#7fe9ff" font-family="monospace" font-size="40" letter-spacing="6">CARIBBEAN SUPPLY</text>
+    <text x="600" y="690" text-anchor="middle" fill="#5fe6df" font-family="monospace" font-size="24" letter-spacing="8" opacity="0.7">CHINE → ANTILLES</text>
+  </svg>
+</template>
+
+<!-- ============== HEADER ============== -->
+<header class="site-header">
+  <div class="wrap nav">
+    <a href="index.html" class="brand" aria-label="Caribbean Supply accueil">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">Caribbean Supply</span>
+        <span class="brand-sub">Chine → Antilles</span>
+      </span>
+    </a>
+    <nav class="nav-links" aria-label="Navigation principale">
+      <a href="comment-ca-marche.html">Comment ça marche</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="simulateur.html">Simulateur</a>
+      <a href="espace-client.html">Espace client</a>
+      <a href="suivi-conteneurs.html">📦 Suivi</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="simulateur.html" class="btn btn-primary nav-cta-keep">Simuler mon devis</a>
+      <button class="nav-toggle" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============== HERO ============== -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="pill tq" style="background:rgba(22,198,192,.12);border-color:rgba(22,198,192,.28);color:var(--turq-400)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+        Transport maritime LCL · Groupage
+      </span>
+      <h1 style="margin-top:18px">Vos achats de Chine,<br /><span class="grad">livrés aux Antilles.</span></h1>
+      <p class="lead">Sourcing, groupage et expédition maritime de la Chine vers la Martinique, la Guadeloupe et la Guyane. Un partenaire fiable pour vos commandes Alibaba & 1688.</p>
+
+      <div class="route-chips">
+        <span class="route-chip"><span class="flag">🇨🇳</span> Guangzhou · Shenzhen</span>
+        <span class="route-chip">→</span>
+        <span class="route-chip"><span class="flag">🏝️</span> Antilles françaises</span>
+      </div>
+
+      <div class="hero-cta">
+        <a href="simulateur.html" class="btn btn-accent btn-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+          Simuler mon devis
+        </a>
+        <a href="comment-ca-marche.html" class="btn btn-ghost-dark btn-lg">Comment ça marche</a>
+      </div>
+
+      <div class="hero-trust">
+        <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5Z"/><path d="m9 12 2 2 4-4"/></svg> Expéditions assurées</span>
+        <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="11" r="3"/><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg> Suivi en temps réel</span>
+        <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg> Paiement sécurisé</span>
+      </div>
+    </div>
+
+    <!-- ===== SIGNATURE HUD WORLD MAP ===== -->
+    <div class="hero-map" id="heroMap" aria-label="Carte HUD du trajet maritime Chine vers les Antilles">
+      <svg class="map-svg" id="mapSvg" viewBox="0 0 1200 660" preserveAspectRatio="xMidYMid slice" role="img">
+        <defs>
+          <linearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#FF9763"/>
+            <stop offset="0.45" stop-color="#FFC36B"/>
+            <stop offset="1" stop-color="#5fe6df"/>
+          </linearGradient>
+          <filter id="coastGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="routeGlowF" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="3.4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="shipGlow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stop-color="#FFC36B" stop-opacity="0.7"/>
+            <stop offset="1" stop-color="#FFC36B" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <g id="gGraticule"></g>
+        <g id="gCountries"></g>
+        <g id="gBorders"></g>
+        <g id="gCoast"></g>
+        <g id="gNodes"></g>
+        <g id="gRoute"></g>
+        <g id="gPorts"></g>
+        <g id="gShip"></g>
+      </svg>
+      <div class="hud">
+        <div class="hud-scan"></div>
+        <span class="hud-corner tl"></span><span class="hud-corner tr"></span>
+        <span class="hud-corner bl"></span><span class="hud-corner br"></span>
+
+        <div class="hud-tag"><span class="dot"></span>CARIBBEAN SUPPLY · LIVE TRACKING</div>
+
+        <div class="hud-timer">
+          <div class="lbl">ETA · TRANSIT MARITIME</div>
+          <div class="clk" id="hudClock">34<span class="sep">:</span>12<span class="sep">:</span>47<span class="sep">:</span>09</div>
+        </div>
+
+        <div class="hud-read l">
+          <div class="row">ORIG <span class="v">GUANGZHOU</span></div>
+          <div class="row">LAT <span class="v">23.13°N</span></div>
+          <div class="row">LON <span class="v">113.26°E</span></div>
+          <div class="row" style="margin-top:8px">VESSEL <span class="v">CS-LCL-2847</span></div>
+          <div class="row">LOAD <span class="v">18.4 CBM</span></div>
+        </div>
+        <div class="hud-read r">
+          <div class="row"><span class="v">FORT-DE-FRANCE</span> DEST</div>
+          <div class="row"><span class="v">14.60°N</span> LAT</div>
+          <div class="row"><span class="v">61.07°W</span> LON</div>
+          <div class="row" style="margin-top:8px"><span class="v">12.4 KN</span> SPD</div>
+          <div class="row"><span class="v">EN MER</span> STATUS</div>
+        </div>
+        <div class="hud-foot">EQUIRECTANGULAR · WGS-84 · CHINE → ANTILLES FRANÇAISES</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== STATS ============== -->
+<section class="stats">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat reveal">
+        <div class="num"><span data-count="500" data-dur="1800">0</span><span class="u">+</span></div>
+        <div class="lbl">Colis livrés</div>
+      </div>
+      <div class="stat reveal d1">
+        <div class="num"><span data-count="12">0</span></div>
+        <div class="lbl">Conteneurs / an</div>
+      </div>
+      <div class="stat reveal d2">
+        <div class="num"><span data-count="3">0</span></div>
+        <div class="lbl">Îles desservies</div>
+      </div>
+      <div class="stat reveal d3">
+        <div class="num"><span data-count="380">0</span><span class="u">€</span></div>
+        <div class="lbl">par CBM, tout compris</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== DESTINATIONS ============== -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Destinations</span>
+      <h2 style="margin-top:14px">Trois territoires, une logistique maîtrisée</h2>
+      <p class="lead" style="margin-inline:auto">Nous regroupons vos marchandises en Chine et les acheminons directement vers votre île.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card dest-card reveal">
+        <div class="dest-bar"></div>
+        <div class="dest-top"><span class="dest-flag"><span class="flag-mq" role="img" aria-label="Drapeau de la Martinique"></span></span><span class="pill tq">Liaison régulière</span></div>
+        <div class="dest-body">
+          <h3>Martinique</h3>
+          <p class="muted mb-0">Livraison au port de Fort-de-France, retrait entrepôt ou livraison à domicile.</p>
+          <div class="dest-meta">
+            <div class="m"><b>~60 j</b>délai estimé</div>
+            <div class="m"><b>380€ HT</b>/ CBM</div>
+          </div>
+        </div>
+      </article>
+      <article class="card dest-card reveal d1">
+        <div class="dest-bar"></div>
+        <div class="dest-top"><span class="dest-flag">🇬🇵</span><span class="pill orange">Groupage LCL</span></div>
+        <div class="dest-body">
+          <h3>Guadeloupe</h3>
+          <p class="muted mb-0">Acheminement vers Pointe-à-Pitre, idéal pour petits volumes et particuliers.</p>
+          <div class="dest-meta">
+            <div class="m"><b>~60 j</b>délai estimé</div>
+            <div class="m"><b>380€ HT</b>/ CBM</div>
+          </div>
+        </div>
+      </article>
+      <article class="card dest-card reveal d2">
+        <div class="dest-bar"></div>
+        <div class="dest-top"><span class="dest-flag">🇬🇫</span><span class="pill tq">Liaison directe</span></div>
+        <div class="dest-body">
+          <h3>Guyane</h3>
+          <p class="muted mb-0">Expédition vers Dégrad-des-Cannes (Cayenne), suivi complet jusqu'à réception.</p>
+          <div class="dest-meta">
+            <div class="m"><b>~40 j</b>délai estimé</div>
+            <div class="m"><b>380€ HT</b>/ CBM</div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============== ATOUTS ============== -->
+<section class="section atouts">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Pourquoi nous</span>
+      <h2 style="margin-top:14px">Une chaîne logistique simple et transparente</h2>
+    </div>
+    <div class="grid-3">
+      <article class="card reveal">
+        <div class="icon-chip turq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+        <h3>Sourcing inclus</h3>
+        <p class="muted mb-0">Vous ne trouvez pas un produit ? On le source pour vous en Chine pour seulement 100€, négociation comprise.</p>
+      </article>
+      <article class="card reveal d1">
+        <div class="icon-chip orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="13" height="10" rx="1"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></div>
+        <h3>Groupage malin</h3>
+        <p class="muted mb-0">Vos petits volumes voyagent en groupage LCL : vous ne payez que les m³ que vous occupez, à 380€ HT/CBM.</p>
+      </article>
+      <article class="card reveal d2">
+        <div class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="11" r="3"/><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+        <h3>Suivi de bout en bout</h3>
+        <p class="muted mb-0">De l'entrepôt de Guangzhou à votre porte : un numéro client unique et un suivi clair à chaque étape.</p>
+      </article>
+    </div>
+
+    <div class="trust-row reveal d2" style="justify-content:center;margin-top:40px">
+      <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5Z"/><path d="m9 12 2 2 4-4"/></svg> Marchandises assurées</span>
+      <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Paiement sécurisé</span>
+      <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><circle cx="12" cy="10" r="2.4"/></svg> Suivi assuré</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CTA BAND ============== -->
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <div>
+        <span class="eyebrow on-dark">Tarif unique & transparent</span>
+        <h2 style="margin-top:14px">Estimez votre expédition en 30 secondes</h2>
+        <p>Indiquez vos dimensions, notre simulateur calcule automatiquement le volume (CBM) et votre prix en temps réel.</p>
+        <div class="price-strip"><span class="p">380€</span><span class="x">/ CBM — sourcing 100€</span></div>
+      </div>
+      <div class="actions">
+        <a href="simulateur.html" class="btn btn-accent btn-lg btn-block">Lancer le simulateur</a>
+        <a href="https://wa.me/596696191509" class="btn btn-ghost-dark btn-block" target="_blank" rel="noopener">Parler sur WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CONTAINER STATUS ============== -->
+<section class="section" style="background: linear-gradient(135deg, rgba(22,198,192,.08), rgba(255,122,61,.05)); padding: 80px 20px">
+  <div class="wrap">
+    <div style="text-align: center; margin-bottom: 60px;">
+      <span class="eyebrow">État du réseau</span>
+      <h2 style="margin-top: 14px">Remplissage des conteneurs</h2>
+      <p style="color: #666; margin-top: 12px; font-size: 15px;">Suivi en temps réel de nos groupages Martinique et Guadeloupe</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 40px; max-width: 900px; margin: 0 auto;" id="containers-preview">
+      <div style="text-align: center; padding: 40px; color: #999;">
+        <div style="font-size: 24px; margin-bottom: 12px;">⏳</div>
+        Chargement des données…
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="suivi-conteneurs.html" class="btn btn-primary" style="display: inline-block;">Voir le suivi détaillé →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span>
+          <span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span>
+        </a>
+        <p>Transport cargo maritime LCL et sourcing entre la Chine et les Antilles françaises.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <a href="simulateur.html">Simulateur de devis</a>
+        <a href="sourcing.html">Service sourcing</a>
+        <a href="comment-ca-marche.html">Comment ça marche</a>
+        <a href="espace-client.html">Espace client</a>
+      </div>
+      <div class="footer-col">
+        <h4>Destinations</h4>
+        <a href="simulateur.html"><span class="flag-mq" role="img" aria-label="Drapeau de la Martinique"></span> Martinique</a>
+        <a href="simulateur.html">🇬🇵 Guadeloupe</a>
+        <a href="simulateur.html">🇬🇫 Guyane</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="https://wa.me/596696191509" target="_blank" rel="noopener">WhatsApp · +596 696 19 15 09</a>
+        <a href="mailto:contact@caribbeansupply.fr">contact@caribbeansupply.fr</a>
+        <a href="contact.html">Page contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span data-year>2026</span> Caribbean Supply — Tous droits réservés.</span>
+      <span>Groupage LCL · 380€ HT/CBM · Sourcing 100€</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============== FLOATING WHATSAPP ============== -->
+<div class="wa-float">
+  <span class="wa-tip">Une question ? Écrivez-nous</span>
+  <a href="https://wa.me/596696191509" target="_blank" rel="noopener" aria-label="Contacter sur WhatsApp">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.07-1-.28-.1-.48-.15-.68.15s-.78 1-.96 1.2c-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.51l-.58-.01c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.8-.73 2.05-1.44.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.1.8.83-3-.2-.31A8.2 8.2 0 1 1 12 20.2Z"/></svg>
+  </a>
+</div>
+
+<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script src="map.js"></script>
+
+<script>
+// Charger les stats des conteneurs sur la page d'accueil
+(function() {
+  const destinations = {
+    MTQ: { name: 'Martinique', flag: '🇲🇶' },
+    GLP: { name: 'Guadeloupe', flag: '🇬🇵' },
+  };
+
+  async function loadContainers() {
+    try {
+      const res = await fetch('/api/container-stats');
+      const data = await res.json();
+      const grid = document.getElementById('containers-preview');
+
+      grid.innerHTML = '';
+
+      Object.entries(destinations).forEach(([code, dest]) => {
+        const stats = data.containers[code];
+        const percent = stats.percent;
+        const statusClass = percent >= 100 ? 'full' : percent >= 50 ? 'filling' : 'empty';
+
+        const card = document.createElement('div');
+        card.style.cssText = 'background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,.08); transition: transform .3s ease';
+        card.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+            <div style="font-size: 32px; margin-right: 12px;">${dest.flag}</div>
+            <div style="flex: 1;">
+              <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: #15264A;">${dest.name}</h3>
+              <div style="font-size: 13px; color: #999; margin-top: 4px;">${stats.percent >= 100 ? 'PLEIN' : stats.percent >= 50 ? 'EN COURS' : 'VIDE'}</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px;">
+              <span style="color: #666;">Remplissage</span>
+              <span style="font-weight: 600; color: #15264A; font-family: monospace;">${percent}%</span>
+            </div>
+            <div style="height: 24px; background: #f0f0f0; border-radius: 12px; overflow: hidden;">
+              <div style="height: 100%; width: ${percent}%; background: linear-gradient(90deg, #16C6C0, #00B8B0); border-radius: 12px; transition: width .6s ease;"></div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px; padding-top: 16px; border-top: 1px solid #eee;">
+            <div style="text-align: center;">
+              <div style="font-weight: 600; color: #16C6C0; font-family: monospace; font-size: 18px;">${stats.cbm.toFixed(1)}</div>
+              <div style="color: #999; margin-top: 4px;">CBM remplis</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-weight: 600; color: #999; font-family: monospace; font-size: 18px;">${(stats.capacity - stats.cbm).toFixed(1)}</div>
+              <div style="color: #999; margin-top: 4px;">CBM restants</div>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    } catch (error) {
+      console.error('Erreur chargement conteneurs:', error);
+      document.getElementById('containers-preview').innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">Erreur lors du chargement</div>';
+    }
+  }
+
+  // Charger au chargement de la page
+  loadContainers();
+
+  // Rafraîchir toutes les 30 secondes
+  setInterval(loadContainers, 30000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Simulateur de devis — Caribbean Supply</title>
+<meta name="description" content="Calculez votre volume (CBM) et votre prix de transport maritime en temps réel. 380€ HT/CBM vers la Martinique, la Guadeloupe et la Guyane." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+.page-hero {
+  background:
+    radial-gradient(800px 400px at 90% 0%, rgba(22,198,192,.14), transparent 60%),
+    linear-gradient(160deg, #15264A, #0C1A33);
+  color: #fff; padding: clamp(40px, 6vw, 70px) 0 clamp(48px, 7vw, 80px);
+}
+.page-hero h1 { color: #fff; }
+.page-hero .lead { color: #B9C8E2; }
+.breadcrumb { display: flex; gap: 8px; align-items: center; color: #8FA2C2; font-size: 0.88rem; margin-bottom: 20px; }
+.breadcrumb a { color: var(--turq-400); }
+.breadcrumb svg { width: 14px; height: 14px; }
+
+.sim-wrap { margin-top: -56px; position: relative; z-index: 2; padding-bottom: clamp(60px,8vw,100px); }
+.sim-grid { display: grid; grid-template-columns: 1.25fr 0.95fr; gap: 26px; align-items: start; }
+@media (max-width: 920px) { .sim-grid { grid-template-columns: 1fr; } }
+
+.sim-panel { background: #fff; border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--sh-lg); padding: clamp(24px, 3vw, 38px); }
+.sim-panel h2 { font-size: 1.4rem; }
+.panel-step-label { font-family: var(--font-display); font-size: 0.78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--turq-600); margin-bottom: 6px; }
+
+.dest-pick { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.dest-opt { cursor: pointer; }
+.dest-opt input { position: absolute; opacity: 0; }
+.dest-opt .box {
+  border: 1.5px solid var(--line-strong); border-radius: var(--r-md);
+  padding: 14px 10px; text-align: center; transition: all .18s; background: #fff;
+}
+.dest-opt .box .fl { font-size: 1.8rem; line-height: 1; }
+.dest-opt .box .nm { font-weight: 600; font-size: 0.92rem; margin-top: 6px; }
+.dest-opt input:checked + .box { border-color: var(--turq-500); background: rgba(22,198,192,.07); box-shadow: 0 0 0 3px rgba(22,198,192,.12); }
+.dest-opt .box:hover { border-color: var(--navy-500); }
+
+.parcel { border: 1px dashed var(--line-strong); border-radius: var(--r-md); padding: 16px; margin-bottom: 14px; position: relative; background: var(--paper); }
+.parcel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.parcel-head .t { font-weight: 700; font-family: var(--font-display); font-size: 0.95rem; color: var(--navy-700); }
+.parcel-cbm { font-size: 0.84rem; color: var(--turq-600); font-weight: 600; }
+.parcel-del { background: none; border: none; color: var(--slate-light); cursor: pointer; padding: 4px; border-radius: 6px; }
+.parcel-del:hover { color: var(--orange-600); background: rgba(255,122,61,.08); }
+.parcel-del svg { width: 18px; height: 18px; }
+.add-parcel { display: inline-flex; align-items: center; gap: 8px; background: none; border: 1.5px dashed var(--line-strong); color: var(--navy-700); font-family: var(--font-body); font-weight: 600; padding: 11px 18px; border-radius: var(--r-md); cursor: pointer; transition: all .18s; }
+.add-parcel:hover { border-color: var(--turq-500); color: var(--turq-600); background: rgba(22,198,192,.05); }
+.add-parcel svg { width: 18px; height: 18px; }
+
+.dropzone {
+  border: 1.5px dashed var(--line-strong); border-radius: var(--r-md);
+  padding: 22px; text-align: center; cursor: pointer; transition: all .18s; color: var(--slate);
+}
+.dropzone:hover, .dropzone.drag { border-color: var(--turq-500); background: rgba(22,198,192,.05); color: var(--turq-600); }
+.dropzone svg { width: 26px; height: 26px; margin-bottom: 6px; }
+.thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; border: 1px solid var(--line); }
+
+.divider { height: 1px; background: var(--line); margin: 26px 0; }
+
+/* Result card (sticky) */
+.result-card { background: linear-gradient(160deg, var(--navy-700), var(--navy-900)); color: #fff; border-radius: var(--r-xl); padding: 30px; box-shadow: var(--sh-lg); position: sticky; top: 90px; }
+.result-card .eyebrow { color: var(--turq-400); }
+.result-rows { margin: 18px 0; }
+.result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.10); }
+.result-row .k { color: #AFC0DD; font-size: 0.94rem; }
+.result-row .v { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+.result-row .v.tq { color: var(--turq-400); }
+.price-box { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: var(--r-lg); padding: 22px; text-align: center; margin: 18px 0; }
+.price-box .label { color: #AFC0DD; font-size: 0.86rem; text-transform: uppercase; letter-spacing: .1em; }
+.price-box .amount { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.6rem, 6vw, 3.4rem); color: #fff; line-height: 1; margin: 8px 0 4px; letter-spacing: -.03em; transition: transform .25s; }
+.price-box .amount.bump { transform: scale(1.06); }
+.price-box .sub { color: #8FA2C2; font-size: 0.85rem; }
+.result-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.result-note { font-size: 0.8rem; color: #8FA2C2; margin-top: 14px; line-height: 1.5; }
+.vol-bar { height: 8px; border-radius: 6px; background: rgba(255,255,255,.12); overflow: hidden; margin-top: 6px; }
+.vol-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--turq-500), var(--orange-500)); width: 0; transition: width .4s cubic-bezier(.2,.7,.3,1); border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a href="index.html" class="brand" aria-label="Caribbean Supply accueil">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span>
+      <span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span>
+    </a>
+    <nav class="nav-links" aria-label="Navigation principale">
+      <a href="comment-ca-marche.html">Comment ça marche</a>
+      <a href="sourcing.html">Sourcing</a>
+      <a href="simulateur.html" class="active">Simulateur</a>
+      <a href="espace-client.html">Espace client</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-primary nav-cta-keep">Nous contacter</a>
+      <button class="nav-toggle" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="index.html">Accueil</a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg><span>Simulateur de devis</span></div>
+    <span class="eyebrow on-dark">Estimation en temps réel</span>
+    <h1 style="margin-top:14px;max-width:18ch">Calculez votre devis maritime instantanément</h1>
+    <p class="lead">Renseignez vos colis, le volume (CBM) et le prix se calculent automatiquement à 380€ HT/CBM. Envoyez ensuite votre demande par WhatsApp ou e-mail.</p>
+  </div>
+</section>
+
+<section class="sim-wrap">
+  <div class="wrap sim-grid">
+    <!-- FORM -->
+    <div class="sim-panel reveal">
+      <div class="panel-step-label">Étape 1 — Destination</div>
+      <h2 style="margin-bottom:16px">Où livrons-nous ?</h2>
+      <div class="dest-pick" id="destPick">
+        <label class="dest-opt"><input type="radio" name="dest" value="Martinique" checked /><span class="box"><span class="fl"><span class="flag-mq" role="img" aria-label="Drapeau de la Martinique"></span></span><span class="nm">Martinique</span></span></label>
+        <label class="dest-opt"><input type="radio" name="dest" value="Guadeloupe" /><span class="box"><span class="fl">🇬🇵</span><span class="nm">Guadeloupe</span></span></label>
+        <label class="dest-opt"><input type="radio" name="dest" value="Guyane" /><span class="box"><span class="fl">🇬🇫</span><span class="nm">Guyane</span></span></label>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="panel-step-label">Étape 2 — Vos colis</div>
+      <h2 style="margin-bottom:16px">Dimensions & poids</h2>
+      <div id="parcels"></div>
+      <button class="add-parcel" id="addParcel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Ajouter un colis</button>
+
+      <div class="divider"></div>
+
+      <div class="panel-step-label">Étape 3 — Détails produit</div>
+      <h2 style="margin-bottom:16px">Type & valeur</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="ptype">Type de produit</label>
+          <select class="select" id="ptype">
+            <option>Électronique / High-tech</option>
+            <option>Mobilier & déco</option>
+            <option>Vêtements & textile</option>
+            <option>Pièces auto / moto</option>
+            <option>Cosmétiques</option>
+            <option>Électroménager</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pval">Valeur marchandise <span class="hint">(€, pour assurance)</span></label>
+          <input class="input" id="pval" type="number" min="0" placeholder="ex : 1200" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Photos des produits <span class="hint">(optionnel)</span></label>
+        <label class="dropzone" id="dropzone" for="fileInput">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 9 5-5 5 5"/><path d="M12 4v12"/></svg>
+          <div><b>Cliquez</b> ou glissez vos photos ici</div>
+          <input type="file" id="fileInput" accept="image/*" multiple hidden />
+        </label>
+        <div class="thumbs" id="thumbs"></div>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-card reveal d1">
+      <span class="eyebrow on-dark">Votre estimation</span>
+      <h3 style="color:#fff;margin-top:12px;font-size:1.25rem" id="resDest">Vers la Martinique</h3>
+
+      <div class="result-rows">
+        <div class="result-row"><span class="k">Volume total</span><span class="v tq"><span id="resCbm">0,00</span> CBM</span></div>
+        <div class="result-row"><span class="k">Poids total</span><span class="v"><span id="resWeight">0</span> kg</span></div>
+        <div class="result-row"><span class="k">Volume facturé</span><span class="v"><span id="resBilled">0,00</span> CBM</span></div>
+      </div>
+
+      <div class="vol-bar"><i id="volFill"></i></div>
+      <p class="result-note" style="margin-top:8px" id="contNote">Soit 0% d'un conteneur 20 pieds (≈ 33 CBM).</p>
+
+      <div class="price-box">
+        <div class="label">Prix transport estimé</div>
+        <div class="amount" id="resPrice">0 €</div>
+        <div class="sub">380 € / CBM — groupage LCL</div>
+      </div>
+
+      <div class="result-row" style="border:none;padding-bottom:0"><span class="k">Assurance estimée <span style="opacity:.7">(1,5%)</span></span><span class="v" id="resIns">—</span></div>
+
+      <div class="result-actions">
+        <a class="btn btn-wa btn-block" id="waBtn" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.07-1-.28-.1-.48-.15-.68.15s-.78 1-.96 1.2c-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.51l-.58-.01c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49 2.98 1.29 2.98.86 3.52.8.54-.05 1.74-.71 1.99-1.4.25-.7.25-1.3.18-1.4Z"/></svg>
+          Envoyer sur WhatsApp
+        </a>
+        <a class="btn btn-ghost-dark btn-block" id="mailBtn" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          Recevoir par e-mail
+        </a>
+      </div>
+      <p class="result-note">Estimation indicative. La facturation finale retient le plus élevé du volume ou du poids (ratio 1 t = 1 m³). Délai moyen ~60 jours.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span><span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span></a>
+        <p>Transport cargo maritime LCL et sourcing entre la Chine et les Antilles françaises.</p>
+      </div>
+      <div class="footer-col"><h4>Services</h4><a href="simulateur.html">Simulateur de devis</a><a href="sourcing.html">Service sourcing</a><a href="comment-ca-marche.html">Comment ça marche</a><a href="espace-client.html">Espace client</a></div>
+      <div class="footer-col"><h4>Destinations</h4><a href="simulateur.html"><span class="flag-mq" role="img" aria-label="Drapeau de la Martinique"></span> Martinique</a><a href="simulateur.html">🇬🇵 Guadeloupe</a><a href="simulateur.html">🇬🇫 Guyane</a></div>
+      <div class="footer-col"><h4>Contact</h4><a href="https://wa.me/596696191509" target="_blank" rel="noopener">WhatsApp · +596 696 19 15 09</a><a href="mailto:contact@caribbeansupply.fr">contact@caribbeansupply.fr</a><a href="contact.html">Page contact</a></div>
+    </div>
+    <div class="footer-bottom"><span>© <span data-year>2026</span> Caribbean Supply — Tous droits réservés.</span><span>Groupage LCL · 380€ HT/CBM · Sourcing 100€</span></div>
+  </div>
+</footer>
+
+<div class="wa-float">
+  <span class="wa-tip">Une question ? Écrivez-nous</span>
+  <a href="https://wa.me/596696191509" target="_blank" rel="noopener" aria-label="Contacter sur WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.07-1-.28-.1-.48-.15-.68.15s-.78 1-.96 1.2c-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.51l-.58-.01c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.8-.73 2.05-1.44.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.1.8.83-3-.2-.31A8.2 8.2 0 1 1 12 20.2Z"/></svg></a>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var RATE = 380, INS_RATE = 0.015, CONTAINER = 33;
+  var parcels = [];
+  var pid = 0;
+
+  function fmtNum(n, dec) { return n.toLocaleString("fr-FR", { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+  function fmtEur(n) { return Math.round(n).toLocaleString("fr-FR") + " €"; }
+
+  function newParcel() { return { id: ++pid, l: 60, w: 40, h: 40, qty: 1, kg: 15 }; }
+
+  function render() {
+    var box = document.getElementById("parcels");
+    box.innerHTML = "";
+    parcels.forEach(function (p, i) {
+      var cbm = (p.l * p.w * p.h / 1e6) * p.qty;
+      var el = document.createElement("div");
+      el.className = "parcel";
+      el.innerHTML =
+        '<div class="parcel-head"><span class="t">Colis ' + (i + 1) + '</span>' +
+        '<div style="display:flex;align-items:center;gap:12px"><span class="parcel-cbm">' + fmtNum(cbm, 3) + ' CBM</span>' +
+        (parcels.length > 1 ? '<button class="parcel-del" data-del="' + p.id + '" aria-label="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>' : '') +
+        '</div></div>' +
+        '<div class="field-row-3">' +
+          fieldNum(p.id, "l", "Longueur (cm)", p.l) +
+          fieldNum(p.id, "w", "Largeur (cm)", p.w) +
+          fieldNum(p.id, "h", "Hauteur (cm)", p.h) +
+        '</div>' +
+        '<div class="field-row" style="margin-bottom:0">' +
+          fieldNum(p.id, "qty", "Quantité", p.qty) +
+          fieldNum(p.id, "kg", "Poids unitaire (kg)", p.kg) +
+        '</div>';
+      box.appendChild(el);
+    });
+    bindInputs();
+    compute();
+  }
+
+  function fieldNum(id, key, label, val) {
+    return '<div class="field" style="margin-bottom:12px"><label>' + label + '</label>' +
+      '<input class="input" type="number" min="0" inputmode="decimal" data-p="' + id + '" data-k="' + key + '" value="' + val + '" /></div>';
+  }
+
+  function bindInputs() {
+    document.querySelectorAll('input[data-p]').forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        var p = parcels.find(function (x) { return x.id == inp.getAttribute("data-p"); });
+        if (!p) return;
+        var v = parseFloat(inp.value) || 0;
+        p[inp.getAttribute("data-k")] = v;
+        // update that parcel's cbm label live without full re-render (keep focus)
+        var head = inp.closest(".parcel").querySelector(".parcel-cbm");
+        var cbm = (p.l * p.w * p.h / 1e6) * p.qty;
+        head.textContent = fmtNum(cbm, 3) + " CBM";
+        compute();
+      });
+    });
+    document.querySelectorAll('[data-del]').forEach(function (b) {
+      b.addEventListener("click", function () {
+        parcels = parcels.filter(function (x) { return x.id != b.getAttribute("data-del"); });
+        render();
+      });
+    });
+  }
+
+  function compute() {
+    var totalCbm = 0, totalKg = 0;
+    parcels.forEach(function (p) {
+      totalCbm += (p.l * p.w * p.h / 1e6) * p.qty;
+      totalKg += p.kg * p.qty;
+    });
+    var billed = Math.max(totalCbm, totalKg / 1000);
+    var price = billed * RATE;
+    var val = parseFloat(document.getElementById("pval").value) || 0;
+    var ins = val * INS_RATE;
+    var dest = document.querySelector('input[name="dest"]:checked').value;
+
+    document.getElementById("resDest").textContent = "Vers la " + dest;
+    document.getElementById("resCbm").textContent = fmtNum(totalCbm, 2);
+    document.getElementById("resWeight").textContent = fmtNum(totalKg, 0);
+    document.getElementById("resBilled").textContent = fmtNum(billed, 2);
+
+    var priceEl = document.getElementById("resPrice");
+    priceEl.textContent = fmtEur(price);
+    priceEl.classList.add("bump");
+    setTimeout(function () { priceEl.classList.remove("bump"); }, 250);
+
+    document.getElementById("resIns").textContent = val > 0 ? fmtEur(ins) : "—";
+    var pct = Math.min(billed / CONTAINER * 100, 100);
+    document.getElementById("volFill").style.width = pct + "%";
+    document.getElementById("contNote").textContent = "Soit " + fmtNum(pct, 0) + "% d'un conteneur 20 pieds (≈ 33 CBM).";
+
+    // build messages
+    var lines = [];
+    lines.push("Bonjour Caribbean Supply, voici ma demande de devis :");
+    lines.push("• Destination : " + dest);
+    parcels.forEach(function (p, i) {
+      lines.push("• Colis " + (i + 1) + " : " + p.l + "×" + p.w + "×" + p.h + " cm, x" + p.qty + ", " + p.kg + " kg/u");
+    });
+    lines.push("• Type : " + document.getElementById("ptype").value);
+    if (val > 0) lines.push("• Valeur : " + fmtEur(val));
+    lines.push("• Volume : " + fmtNum(totalCbm, 2) + " CBM (facturé " + fmtNum(billed, 2) + " CBM)");
+    lines.push("• Prix estimé : " + fmtEur(price));
+    var msg = lines.join("\n");
+    document.getElementById("waBtn").href = "https://wa.me/596696191509?text=" + encodeURIComponent(msg);
+    var subject = "Demande de devis — " + dest + " (" + fmtNum(billed, 2) + " CBM)";
+    document.getElementById("mailBtn").href = "mailto:contact@caribbeansupply.fr?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(msg);
+  }
+
+  document.getElementById("addParcel").addEventListener("click", function () { parcels.push(newParcel()); render(); });
+  document.getElementById("pval").addEventListener("input", compute);
+  document.getElementById("ptype").addEventListener("change", compute);
+  document.querySelectorAll('input[name="dest"]').forEach(function (r) { r.addEventListener("change", compute); });
+
+  // Tracking des devis → Google Sheet (fire-and-forget, ne bloque jamais WhatsApp/e-mail)
+  function trackQuote(channel) {
+    try {
+      var totalCbm = 0, totalKg = 0, desc = [];
+      parcels.forEach(function (p, i) {
+        totalCbm += (p.l * p.w * p.h / 1e6) * p.qty;
+        totalKg += p.kg * p.qty;
+        desc.push((i + 1) + ") " + p.l + "x" + p.w + "x" + p.h + "cm x" + p.qty + " " + p.kg + "kg/u");
+      });
+      var billed = Math.max(totalCbm, totalKg / 1000);
+      fetch("/api/track-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          channel: channel,
+          destination: document.querySelector('input[name="dest"]:checked').value,
+          productType: document.getElementById("ptype").value,
+          value: parseFloat(document.getElementById("pval").value) || 0,
+          parcels: desc.join(" | "),
+          totalCbm: Math.round(totalCbm * 100) / 100,
+          billedCbm: Math.round(billed * 100) / 100,
+          totalWeight: Math.round(totalKg),
+          price: Math.round(billed * RATE)
+        })
+      }).catch(function () {});
+    } catch (e) {}
+  }
+  document.getElementById("waBtn").addEventListener("click", function () { trackQuote("WhatsApp"); });
+  document.getElementById("mailBtn").addEventListener("click", function () { trackQuote("Email"); });
+
+  // file upload preview
+  var fileInput = document.getElementById("fileInput");
+  var thumbs = document.getElementById("thumbs");
+  var dz = document.getElementById("dropzone");
+  function addFiles(files) {
+    Array.prototype.forEach.call(files, function (f) {
+      if (!f.type.startsWith("image/")) return;
+      var img = document.createElement("img");
+      img.className = "thumb";
+      img.src = URL.createObjectURL(f);
+      thumbs.appendChild(img);
+    });
+  }
+  fileInput.addEventListener("change", function () { addFiles(fileInput.files); });
+  ["dragenter", "dragover"].forEach(function (e) { dz.addEventListener(e, function (ev) { ev.preventDefault(); dz.classList.add("drag"); }); });
+  ["dragleave", "drop"].forEach(function (e) { dz.addEventListener(e, function (ev) { ev.preventDefault(); dz.classList.remove("drag"); }); });
+  dz.addEventListener("drop", function (ev) { addFiles(ev.dataTransfer.files); });
+
+  parcels.push(newParcel());
+  render();
+})();
+</script>
+</body>
+</html>

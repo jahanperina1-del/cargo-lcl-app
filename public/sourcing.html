@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Service Sourcing — Caribbean Supply</title>
+<meta name="description" content="Vous voulez un produit, on le trouve. Service de sourcing en Chine pour 100€ : recherche, négociation et contrôle qualité." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+.src-hero {
+  background:
+    radial-gradient(800px 400px at 85% 10%, rgba(255,122,61,.16), transparent 60%),
+    radial-gradient(600px 400px at 10% 90%, rgba(22,198,192,.12), transparent 60%),
+    linear-gradient(160deg, #15264A, #0C1A33);
+  color: #fff; overflow: hidden;
+  padding: clamp(40px,6vw,72px) 0 clamp(48px,7vw,84px);
+}
+.src-hero h1 { color: #fff; }
+.src-hero .lead { color: #B9C8E2; max-width: 44ch; }
+.src-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(28px,4vw,56px); align-items: center; }
+@media (max-width: 920px) { .src-grid { grid-template-columns: 1fr; } .src-anim { order: -1; } }
+.breadcrumb { display: flex; gap: 8px; align-items: center; color: #8FA2C2; font-size: 0.88rem; margin-bottom: 20px; }
+.breadcrumb a { color: var(--orange-400); }
+.breadcrumb svg { width: 14px; height: 14px; }
+
+.price-tag {
+  display: inline-flex; align-items: baseline; gap: 10px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16);
+  padding: 14px 24px; border-radius: var(--r-md); margin: 26px 0 6px;
+}
+.price-tag .p { font-family: var(--font-display); font-weight: 700; font-size: 2.2rem; color: var(--orange-400); }
+.price-tag .x { color: #AFC0DD; font-size: 0.95rem; }
+
+/* sourcing animation : search -> found */
+.src-anim {
+  position: relative; aspect-ratio: 1 / 1; max-width: 440px; width: 100%; margin-inline: auto;
+  border-radius: var(--r-xl);
+  background: linear-gradient(160deg, #0E2046, #0A1730);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 30px 80px rgba(5,12,28,.5), inset 0 1px 0 rgba(255,255,255,.06);
+  display: grid; place-items: center; overflow: hidden;
+}
+.radar { position: absolute; inset: 0; display: grid; place-items: center; }
+.radar-ring { position: absolute; border: 1px solid rgba(56,217,210,.18); border-radius: 50%; }
+.r1 { width: 70%; height: 70%; } .r2 { width: 48%; height: 48%; } .r3 { width: 26%; height: 26%; }
+.radar-sweep {
+  position: absolute; width: 50%; height: 50%; left: 50%; top: 50%;
+  transform-origin: top left;
+  background: conic-gradient(from 0deg, rgba(56,217,210,.28), transparent 38%);
+  border-radius: 0 100% 0 0;
+  animation: sweep 3.6s linear infinite;
+}
+@keyframes sweep { to { transform: rotate(360deg); } }
+.blip {
+  position: absolute; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--orange-500); box-shadow: 0 0 12px var(--orange-500);
+  opacity: 0; animation: blip 3.6s ease-in-out infinite;
+}
+.blip.b1 { left: 62%; top: 38%; animation-delay: 1.0s; }
+.blip.b2 { left: 33%; top: 60%; animation-delay: 2.0s; }
+.blip.b3 { left: 58%; top: 64%; animation-delay: 2.9s; }
+@keyframes blip { 0%,100%{opacity:0;transform:scale(.4);} 12%{opacity:1;transform:scale(1.2);} 40%{opacity:.5;transform:scale(1);} 70%{opacity:0;} }
+.src-center {
+  position: relative; z-index: 2; width: 96px; height: 96px; border-radius: 24px;
+  background: linear-gradient(150deg, var(--turq-500), var(--navy-600));
+  display: grid; place-items: center; box-shadow: 0 16px 40px rgba(22,198,192,.35);
+  animation: floaty 4s ease-in-out infinite;
+}
+.src-center svg { width: 46px; height: 46px; color: #fff; }
+@keyframes floaty { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+.found-tag {
+  position: absolute; z-index: 3; bottom: 26px;
+  background: #fff; color: var(--navy-700); font-weight: 700; font-size: 0.88rem;
+  padding: 9px 16px; border-radius: var(--r-pill); box-shadow: var(--sh-md);
+  display: inline-flex; align-items: center; gap: 8px;
+  animation: foundPop 3.6s ease-in-out infinite;
+}
+.found-tag svg { width: 16px; height: 16px; color: var(--turq-600); }
+@keyframes foundPop { 0%,55%{opacity:0;transform:translateY(12px) scale(.9);} 68%,90%{opacity:1;transform:translateY(0) scale(1);} 100%{opacity:0;} }
+
+/* steps */
+.src-steps { background: var(--paper); }
+.step-list { display: grid; gap: 18px; }
+.step-item { display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: start; }
+.step-num {
+  width: 52px; height: 52px; border-radius: 16px; flex-shrink: 0;
+  display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.3rem;
+  color: #fff; background: linear-gradient(150deg, var(--navy-700), var(--navy-850));
+}
+.step-item:nth-child(2) .step-num { background: linear-gradient(150deg, var(--turq-600), var(--navy-700)); }
+.step-item:nth-child(3) .step-num { background: linear-gradient(150deg, var(--orange-500), var(--orange-600)); }
+.step-item:nth-child(4) .step-num { background: linear-gradient(150deg, var(--navy-600), var(--turq-600)); }
+.step-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px 24px; box-shadow: var(--sh-sm); flex: 1; }
+.step-card h3 { font-size: 1.18rem; margin-bottom: 6px; }
+.step-card p { margin-bottom: 0; color: var(--slate); }
+
+/* included grid */
+.incl-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
+@media (max-width: 620px) { .incl-grid { grid-template-columns: 1fr; } }
+.incl-item { display: flex; gap: 14px; align-items: flex-start; padding: 18px 20px; background: #fff; border: 1px solid var(--line); border-radius: var(--r-md); }
+.incl-item .ck { width: 26px; height: 26px; border-radius: 50%; background: rgba(22,198,192,.12); display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
+.incl-item .ck svg { width: 15px; height: 15px; color: var(--turq-600); }
+.incl-item b { display: block; color: var(--ink); font-family: var(--font-display); font-weight: 600; margin-bottom: 3px; }
+.incl-item span { color: var(--slate); font-size: 0.92rem; }
+
+.cta-band {
+  background: radial-gradient(700px 400px at 85% 20%, rgba(255,122,61,.18), transparent 60%), linear-gradient(150deg, var(--navy-700), var(--navy-900));
+  color: #fff; border-radius: var(--r-xl); padding: clamp(40px,6vw,64px);
+  display: grid; grid-template-columns: 1.4fr auto; gap: 32px; align-items: center; box-shadow: var(--sh-lg);
+}
+.cta-band h2 { color: #fff; } .cta-band p { color: #BCD; margin-bottom: 0; }
+.cta-band .actions { display: flex; flex-direction: column; gap: 12px; }
+@media (max-width: 760px) { .cta-band { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span><span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span></a>
+    <nav class="nav-links">
+      <a href="comment-ca-marche.html">Comment ça marche</a>
+      <a href="sourcing.html" class="active">Sourcing</a>
+      <a href="simulateur.html">Simulateur</a>
+      <a href="espace-client.html">Espace client</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="simulateur.html" class="btn btn-primary nav-cta-keep">Simuler mon devis</a>
+      <button class="nav-toggle" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<section class="src-hero">
+  <div class="wrap src-grid">
+    <div>
+      <div class="breadcrumb"><a href="index.html">Accueil</a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg><span>Sourcing</span></div>
+      <span class="pill orange" style="background:rgba(255,122,61,.12);border-color:rgba(255,122,61,.28);color:var(--orange-400)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> Service sourcing
+      </span>
+      <h1 style="margin-top:18px">Vous voulez un produit ?<br /><span style="color:var(--orange-400)">On le trouve.</span></h1>
+      <p class="lead">Un article repéré sur Alibaba, 1688 ou ailleurs ? Vous ne savez pas où chercher ? Notre équipe le source pour vous en Chine, négocie le meilleur prix et vérifie le fournisseur.</p>
+      <div class="price-tag"><span class="p">100€</span><span class="x">par recherche produit · négociation incluse</span></div>
+      <div class="hero-cta" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:24px">
+        <a href="https://wa.me/596696191509?text=Bonjour%2C%20je%20cherche%20un%20produit%20%C3%A0%20sourcer%20en%20Chine." class="btn btn-accent btn-lg" target="_blank" rel="noopener">Lancer une recherche</a>
+        <a href="contact.html" class="btn btn-ghost-dark btn-lg">Poser une question</a>
+      </div>
+    </div>
+
+    <div class="src-anim" aria-label="Animation de recherche de produit">
+      <div class="radar">
+        <div class="radar-ring r1"></div>
+        <div class="radar-ring r2"></div>
+        <div class="radar-ring r3"></div>
+        <div class="radar-sweep"></div>
+        <span class="blip b1"></span><span class="blip b2"></span><span class="blip b3"></span>
+      </div>
+      <div class="src-center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </div>
+      <div class="found-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg> Produit trouvé !</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW THE SOURCING WORKS -->
+<section class="section src-steps">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Le déroulé</span>
+      <h2 style="margin-top:14px">Du besoin au fournisseur, en 4 temps</h2>
+    </div>
+    <div class="step-list">
+      <div class="step-item reveal">
+        <div class="step-num">1</div>
+        <div class="step-card">
+          <h3>Vous décrivez le produit</h3>
+          <p>Une photo, un lien, une référence ou une simple description : envoyez-nous ce que vous cherchez par WhatsApp ou e-mail.</p>
+        </div>
+      </div>
+      <div class="step-item reveal d1">
+        <div class="step-num">2</div>
+        <div class="step-card">
+          <h3>On le source en Chine</h3>
+          <p>Nous identifions les fournisseurs sérieux sur Alibaba, 1688 et nos réseaux locaux, et vérifions leur fiabilité.</p>
+        </div>
+      </div>
+      <div class="step-item reveal d2">
+        <div class="step-num">3</div>
+        <div class="step-card">
+          <h3>On négocie le prix</h3>
+          <p>Nous discutons le tarif, les quantités et les conditions en mandarin, pour obtenir la meilleure offre possible.</p>
+        </div>
+      </div>
+      <div class="step-item reveal d3">
+        <div class="step-num">4</div>
+        <div class="step-card">
+          <h3>Vous validez & on expédie</h3>
+          <p>Vous recevez un devis clair. Une fois validé, le produit rejoint notre groupage maritime vers votre île.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S INCLUDED -->
+<section class="section">
+  <div class="wrap">
+    <div class="grid-2" style="align-items:center;gap:48px">
+      <div class="reveal">
+        <span class="eyebrow">Ce qui est inclus</span>
+        <h2 style="margin-top:14px">Un forfait simple à 100€</h2>
+        <p class="lead">Le forfait sourcing couvre tout le travail de recherche et de mise en relation. Le prix du produit et le transport sont facturés séparément, en toute transparence.</p>
+        <div class="trust-row" style="margin-top:24px">
+          <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5Z"/><path d="m9 12 2 2 4-4"/></svg> Fournisseurs vérifiés</span>
+          <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="9"/></svg> Sans engagement</span>
+        </div>
+      </div>
+      <div class="incl-grid reveal d1">
+        <div class="incl-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><div><b>Recherche multi-sources</b><span>Alibaba, 1688 & réseaux locaux</span></div></div>
+        <div class="incl-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><div><b>Négociation du prix</b><span>En mandarin, au meilleur tarif</span></div></div>
+        <div class="incl-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><div><b>Vérification fournisseur</b><span>Sérieux & antécédents contrôlés</span></div></div>
+        <div class="incl-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><div><b>Devis clair</b><span>Produit + transport détaillés</span></div></div>
+        <div class="incl-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><div><b>Photos & échantillons</b><span>Sur demande avant commande</span></div></div>
+        <div class="incl-item"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><div><b>Groupage intégré</b><span>Expédition directe vers vous</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <div>
+        <span class="eyebrow on-dark">Prêt à chercher ?</span>
+        <h2 style="margin-top:14px">Dites-nous ce que vous voulez importer</h2>
+        <p>Un lien, une photo ou quelques mots suffisent. On revient vers vous avec une proposition.</p>
+      </div>
+      <div class="actions">
+        <a href="https://wa.me/596696191509?text=Bonjour%2C%20je%20cherche%20un%20produit%20%C3%A0%20sourcer%20en%20Chine." class="btn btn-wa btn-block btn-lg" target="_blank" rel="noopener">Demander sur WhatsApp</a>
+        <a href="simulateur.html" class="btn btn-ghost-dark btn-block">Estimer le transport</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span><span class="brand-text"><span class="brand-name">Caribbean Supply</span><span class="brand-sub">Chine → Antilles</span></span></a>
+        <p>Transport cargo maritime LCL et sourcing entre la Chine et les Antilles françaises.</p>
+      </div>
+      <div class="footer-col"><h4>Services</h4><a href="simulateur.html">Simulateur de devis</a><a href="sourcing.html">Service sourcing</a><a href="comment-ca-marche.html">Comment ça marche</a><a href="espace-client.html">Espace client</a></div>
+      <div class="footer-col"><h4>Destinations</h4><a href="simulateur.html"><span class="flag-mq" role="img" aria-label="Drapeau de la Martinique"></span> Martinique</a><a href="simulateur.html">🇬🇵 Guadeloupe</a><a href="simulateur.html">🇬🇫 Guyane</a></div>
+      <div class="footer-col"><h4>Contact</h4><a href="https://wa.me/596696191509" target="_blank" rel="noopener">WhatsApp · +596 696 19 15 09</a><a href="mailto:contact@caribbeansupply.fr">contact@caribbeansupply.fr</a><a href="contact.html">Page contact</a></div>
+    </div>
+    <div class="footer-bottom"><span>© <span data-year>2026</span> Caribbean Supply — Tous droits réservés.</span><span>Groupage LCL · 380€ HT/CBM · Sourcing 100€</span></div>
+  </div>
+</footer>
+
+<div class="wa-float">
+  <span class="wa-tip">Une question ? Écrivez-nous</span>
+  <a href="https://wa.me/596696191509" target="_blank" rel="noopener" aria-label="Contacter sur WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.07-1-.28-.1-.48-.15-.68.15s-.78 1-.96 1.2c-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.51l-.58-.01c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.8-.73 2.05-1.44.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.1.8.83-3-.2-.31A8.2 8.2 0 1 1 12 20.2Z"/></svg></a>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
