@@ -213,38 +213,6 @@
 
       <div class="dash-cols">
         <div>
-          <h3 style="font-size:1.2rem;margin-bottom:14px">Vos expéditions</h3>
-
-          <div class="order">
-            <div class="order-top">
-              <div><span class="ref">#CS‑20847</span> <span class="dest" id="ord1Dest">· Martinique</span></div>
-              <span class="badge-status transit">En transit</span>
-            </div>
-            <div class="timeline">
-              <div class="tl-fill" style="width:58%"></div>
-              <div class="tl-step done"><div class="tl-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><div class="tl-label">Commandé</div></div>
-              <div class="tl-step done"><div class="tl-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><div class="tl-label">Entrepôt</div></div>
-              <div class="tl-step current"><div class="tl-dot"></div><div class="tl-label">En mer</div></div>
-              <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">Livré</div></div>
-            </div>
-          </div>
-
-          <div class="order">
-            <div class="order-top">
-              <div><span class="ref">#CS‑20963</span> <span class="dest" id="ord2Dest">· Martinique</span></div>
-              <span class="badge-status prep">Préparation</span>
-            </div>
-            <div class="timeline">
-              <div class="tl-fill" style="width:16%"></div>
-              <div class="tl-step done"><div class="tl-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><div class="tl-label">Commandé</div></div>
-              <div class="tl-step current"><div class="tl-dot"></div><div class="tl-label">Entrepôt</div></div>
-              <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">En mer</div></div>
-              <div class="tl-step"><div class="tl-dot"></div><div class="tl-label">Livré</div></div>
-            </div>
-          </div>
-        </div>
-
-        <div>
           <div class="warehouse-card">
             <h4>📦 Adresse officielle du Warehouse Chine</h4>
             <div class="address-box">
@@ -404,8 +372,6 @@
     $("#addrNum").textContent = "(" + c.number + ")";
     $("#alertNum").textContent = c.number;
     $("#dashIsland").textContent = c.island;
-    $("#ord1Dest").textContent = "· " + c.island;
-    $("#ord2Dest").textContent = "· " + c.island;
     $("#authView").style.display = "none";
     $("#dashView").classList.add("show");
     clearMsg();
