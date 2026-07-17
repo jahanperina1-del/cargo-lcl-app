@@ -270,17 +270,26 @@
             <div id="ordersList"></div>
           </div>
 
-          <!-- SUPPLIER INVOICES UPLOAD -->
+          <!-- SUPPLIER INVOICES VIA WHATSAPP -->
           <div class="supplier-upload-section" id="supplierSection">
-            <h4>📤 Envoyer vos factures fournisseur</h4>
-            <p style="color: var(--slate); font-size: 0.9rem; margin-bottom: 16px;">Uploadez vos factures fournisseur (PDF) et nous les traiterons</p>
-            <div class="dropzone-supplier" id="dropzoneSupplier">
-              <p>📎 Glisse-dépose le PDF ici ou clique pour sélectionner</p>
-              <input type="file" id="fileInputSupplier" accept=".pdf" style="display: none;" />
-              <div class="file-name-supplier" id="fileNameSupplier"></div>
+            <h4>📄 Envoyez vos factures fournisseur sur WhatsApp</h4>
+            <p style="color: var(--slate); font-size: 0.92rem; margin-bottom: 12px;">
+              <strong>Dès votre achat, demandez à votre fournisseur une facture</strong> de tous les articles achetés.
+              Elle est <strong>indispensable pour la déclaration douanière</strong> et la packing list du conteneur.
+            </p>
+            <div style="background: #fff; border: 1px solid var(--line); border-radius: var(--r-md); padding: 14px 16px; margin-bottom: 14px; font-size: 0.9rem; line-height: 1.8;">
+              <strong style="color: var(--navy-700);">La facture doit obligatoirement contenir :</strong><br/>
+              ✅ Les <strong>HS codes</strong> des produits (codes douaniers)<br/>
+              ✅ Le <strong>poids</strong> des marchandises<br/>
+              ✅ Une <strong>description précise</strong> de chaque article<br/>
+              ⚠️ Ce doit être une <strong>vraie facture</strong>, pas un simple reçu
             </div>
-            <button class="btn-upload-supplier" id="submitSupplier">Envoyer la facture</button>
-            <div class="upload-status" id="uploadStatusSupplier"></div>
+            <a href="https://wa.me/8619700268583?text=Bonjour%2C%20voici%20ma%20facture%20fournisseur.%20Mon%20N%C2%B0%20client%20%3A%20" target="_blank" rel="noopener" class="btn btn-wa btn-block" style="text-align:center" id="waInvoiceBtn">
+              📲 Envoyer ma facture sur WhatsApp
+            </a>
+            <p style="color: var(--slate-light); font-size: 0.82rem; margin: 10px 0 0; text-align: center;">
+              WhatsApp : +86 197 0026 8583 — pensez à indiquer votre N° client
+            </p>
           </div>
 
           <a href="simulateur.html" class="btn btn-accent btn-block">Nouvelle estimation</a>
@@ -427,6 +436,10 @@
     $("#dashView").classList.add("show");
     clearMsg();
     loadOrders(c.number);
+    var waBtn = $("#waInvoiceBtn");
+    if (waBtn) {
+      waBtn.href = "https://wa.me/8619700268583?text=" + encodeURIComponent("Bonjour, voici ma facture fournisseur. Mon N° client : " + c.number);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -473,87 +486,10 @@
     $("#ordersSection").style.display = "block";
   }
 
-  // Supplier invoices upload
-  var currentClient = load();
-  var dropzoneSupplier = $("#dropzoneSupplier");
-  var fileInputSupplier = $("#fileInputSupplier");
-  var fileNameDisplay = $("#fileNameSupplier");
-  var submitBtn = $("#submitSupplier");
-  var uploadStatus = $("#uploadStatusSupplier");
-
-  dropzoneSupplier.addEventListener("click", function () { fileInputSupplier.click(); });
-
-  fileInputSupplier.addEventListener("change", function (e) {
-    if (e.target.files[0]) {
-      fileNameDisplay.textContent = "✓ " + e.target.files[0].name;
-    }
-  });
-
-  dropzoneSupplier.addEventListener("dragover", function (e) {
-    e.preventDefault();
-    dropzoneSupplier.classList.add("drag");
-  });
-
-  dropzoneSupplier.addEventListener("dragleave", function () {
-    dropzoneSupplier.classList.remove("drag");
-  });
-
-  dropzoneSupplier.addEventListener("drop", function (e) {
-    e.preventDefault();
-    dropzoneSupplier.classList.remove("drag");
-    fileInputSupplier.files = e.dataTransfer.files;
-    if (fileInputSupplier.files[0]) {
-      fileNameDisplay.textContent = "✓ " + fileInputSupplier.files[0].name;
-    }
-  });
-
-  submitBtn.addEventListener("click", function () {
-    var file = fileInputSupplier.files[0];
-    if (!file || !currentClient) {
-      showStatus("Fichier requis", "error", uploadStatus);
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Envoi en cours...";
-
-    var formData = new FormData();
-    formData.append("file", file);
-    formData.append("clientNumber", currentClient.number);
-    formData.append("clientEmail", currentClient.email);
-    formData.append("clientName", currentClient.name);
-
-    fetch("/api/supplier-invoices/upload", {
-      method: "POST",
-      body: formData
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (res) {
-        if (!res.success) throw new Error(res.error || "Erreur upload");
-        showStatus("✓ Facture envoyée avec succès!", "success", uploadStatus);
-        fileInputSupplier.value = "";
-        fileNameDisplay.textContent = "";
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Envoyer la facture";
-      })
-      .catch(function (e) {
-        showStatus("✗ " + e.message, "error", uploadStatus);
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Envoyer la facture";
-      });
-  });
-
-  function showStatus(msg, type, element) {
-    element.textContent = msg;
-    element.className = "upload-status " + type;
-    setTimeout(function () { element.className = "upload-status"; }, 5000);
-  }
-
   // auto-login if returning
   var existing = load();
   if (existing && existing.number) {
     $("#liEmail").value = existing.email;
-    currentClient = existing;
   }
 })();
 </script>
