@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe-client'
 import { Resend } from 'resend'
+import { createClient } from '@supabase/supabase-js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SECRET_KEY!
+)
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +30,17 @@ export async function POST(request: NextRequest) {
         const clientNumber = session.metadata.clientNumber || 'N/A'
         const clientName = session.metadata.clientName || 'Client'
         const amount = (session.amount_total || 0) / 100
+
+        // Create order in Supabase
+        await supabase.from('orders').insert({
+          client_number: clientNumber,
+          client_email: session.customer_email,
+          cbm: cbm,
+          amount_eur: amount,
+          stripe_session_id: sessionId,
+          invoice_number: sessionId,
+          status: 'paid',
+        }).catch(err => console.error('Supabase order error:', err))
 
         await resend.emails.send({
           from: 'Caribbean Supply <contact@caribbeansupply.net>',
