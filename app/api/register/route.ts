@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // Send welcome email with Resend template
     await resend.emails.send({
-      from: 'Caribbean Supply <noreply@caribbeansupply.net>',
+      from: 'Caribbean Supply <contact@caribbeansupply.net>',
       to: email,
       template: 'welcome-email',
       props: {

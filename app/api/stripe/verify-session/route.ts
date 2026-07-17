@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         const amount = (session.amount_total || 0) / 100
 
         await resend.emails.send({
-          from: 'Caribbean Supply <noreply@caribbeansupply.net>',
+          from: 'Caribbean Supply <contact@caribbeansupply.net>',
           to: session.customer_email,
           template: 'payment-confirmation',
           props: {
