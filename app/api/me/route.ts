@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Token invalide' }, { status: 401 })
   }
 
-  const client = getClientById(decoded.id)
+  const client = await getClientById(decoded.id)
   if (!client) {
     return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
   }

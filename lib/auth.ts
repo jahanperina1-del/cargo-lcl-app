@@ -92,7 +92,29 @@ export async function loginClient(email: string, password: string): Promise<{
   token?: string
   client?: Omit<Client, 'password'>
 }> {
-  const client = clientCache.find(c => c.email === email)
+  // Chercher d'abord dans le cache
+  let client = clientCache.find(c => c.email === email)
+
+  // Si pas en cache, charger depuis Google Sheets
+  if (!client && WEBHOOK) {
+    try {
+      const response = await fetch(WEBHOOK, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data?.clients && Array.isArray(data.clients)) {
+          clientCache = data.clients
+          client = clientCache.find(c => c.email === email)
+        }
+      }
+    } catch (e) {
+      console.error('Erreur chargement clients:', e)
+    }
+  }
+
   if (!client) {
     return { success: false, error: 'Email ou mot de passe incorrect' }
   }
@@ -116,8 +138,29 @@ export function verifyToken(token: string): { id: string; email: string } | null
   }
 }
 
-export function getClientById(id: string): Omit<Client, 'password'> | null {
-  const client = clientCache.find(c => c.id === id)
+export async function getClientById(id: string): Promise<Omit<Client, 'password'> | null> {
+  let client = clientCache.find(c => c.id === id)
+
+  // Si pas en cache, charger depuis Google Sheets
+  if (!client && WEBHOOK) {
+    try {
+      const response = await fetch(WEBHOOK, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data?.clients && Array.isArray(data.clients)) {
+          clientCache = data.clients
+          client = clientCache.find(c => c.id === id)
+        }
+      }
+    } catch (e) {
+      console.error('Erreur chargement client:', e)
+    }
+  }
+
   if (!client) return null
   const { password: _, ...clientWithoutPassword } = client
   return clientWithoutPassword
