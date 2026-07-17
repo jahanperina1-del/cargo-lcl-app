@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: 'Caribbean Supply <contact@caribbeansupply.net>',
           to: session.customer_email,
-          template: 'payment-confirmation',
-          props: {
+          template: { id: 'payment-confirmation' },
+          variables: {
             firstName: clientName.split(' ')[0],
             clientNumber: clientNumber,
             cbm: cbm.toFixed(2),

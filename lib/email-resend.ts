@@ -19,7 +19,7 @@ export async function sendWelcomeEmail(client: EmailClient) {
       to: client.email,
       subject: `🎉 Bienvenue chez Caribbean Supply - Votre numéro client: ${client.clientNumber}`,
       template: { id: 'welcome-email' },
-      props: {
+      variables: {
         firstName: client.firstName,
         lastName: client.lastName,
         clientNumber: client.clientNumber,
@@ -51,7 +51,7 @@ export async function sendPaymentConfirmationEmail(
       to: client.email,
       subject: `✅ Paiement confirmé - Facture #${invoiceNumber}`,
       template: { id: 'payment-confirmation' },
-      props: {
+      variables: {
         firstName: client.firstName,
         clientNumber: client.clientNumber,
         cbm: cbm.toFixed(2),
@@ -84,7 +84,7 @@ export async function sendReminderEmail(client: EmailClient) {
       to: client.email,
       subject: `📦 ${client.firstName}, vos colis sont prêts? (${client.clientNumber})`,
       template: { id: 'reminder-email' },
-      props: {
+      variables: {
         firstName: client.firstName,
         clientNumber: client.clientNumber,
       },

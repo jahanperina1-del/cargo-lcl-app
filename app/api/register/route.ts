@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
     await resend.emails.send({
       from: 'Caribbean Supply <contact@caribbeansupply.net>',
       to: email,
-      template: 'welcome-email',
-      props: {
+      template: { id: 'welcome-email' },
+      variables: {
         firstName: result.client!.firstName,
         lastName: result.client!.lastName,
         clientNumber: result.client!.clientNumber,
