@@ -45,18 +45,21 @@ export async function POST(request: NextRequest) {
       .getPublicUrl(fileName)
 
     // Save to database
-    await supabase
-      .from('supplier_invoices')
-      .insert({
-        client_number: clientNumber,
-        client_email: clientEmail,
-        client_name: clientName,
-        file_name: fileName,
-        original_name: file.name,
-        file_url: publicUrl.publicUrl,
-        uploaded_at: new Date().toISOString(),
-      })
-      .catch(err => console.error('DB error:', err))
+    try {
+      await supabase
+        .from('supplier_invoices')
+        .insert({
+          client_number: clientNumber,
+          client_email: clientEmail,
+          client_name: clientName,
+          file_name: fileName,
+          original_name: file.name,
+          file_url: publicUrl.publicUrl,
+          uploaded_at: new Date().toISOString(),
+        })
+    } catch (dbErr) {
+      console.error('DB error:', dbErr)
+    }
 
     // Send notification email to admin
     await resend.emails.send({
