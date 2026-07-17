@@ -1,17 +1,11 @@
 [build]
   command = "npm run build"
-  functions = "netlify/functions"
   publish = ".next"
-
-[functions]
-  node_bundler = "esbuild"
-  included_files = ["lib/**/*.ts"]
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/"
   status = 200
-  condition = "!{path: /api/*, /static/*, /.well-known/*}"
 
 [[headers]]
   for = "/api/*"
