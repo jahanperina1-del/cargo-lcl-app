@@ -28,15 +28,28 @@ export async function POST(request: NextRequest) {
     await resend.emails.send({
       from: 'Caribbean Supply <contact@caribbeansupply.net>',
       to: email,
-      template: {
-        id: 'welcome-email',
-      },
-      props: {
-        firstName: result.client!.firstName,
-        lastName: result.client!.lastName,
-        clientNumber: result.client!.clientNumber,
-      },
+      template: 'welcome-email',
+      react: null,
     } as any).catch(err => console.error('Email error:', err))
+
+    // Also send variables using alternative approach
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Caribbean Supply <contact@caribbeansupply.net>',
+        to: email,
+        template_id: 'welcome-email',
+        variables: {
+          firstName: result.client!.firstName,
+          lastName: result.client!.lastName,
+          clientNumber: result.client!.clientNumber,
+        },
+      }),
+    }).catch(err => console.error('Email API error:', err))
 
     return NextResponse.json({ success: true, client: result.client })
   } catch (error) {
