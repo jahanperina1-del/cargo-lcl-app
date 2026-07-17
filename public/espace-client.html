@@ -77,6 +77,25 @@
 .logout { background: none; border: 1px solid var(--line-strong); color: var(--slate); font-family: var(--font-body); font-weight: 600; padding: 10px 18px; border-radius: var(--r-pill); cursor: pointer; transition: all .18s; }
 .logout:hover { border-color: var(--orange-500); color: var(--orange-600); }
 
+/* ORDERS & INVOICES */
+.orders-section { margin-top: 30px; }
+.order-item { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+@media (max-width: 600px) { .order-item { flex-direction: column; align-items: flex-start; gap: 14px; } }
+.order-info { flex: 1; }
+.order-date { font-size: 0.85rem; color: var(--slate); }
+.order-cbm { font-weight: 700; color: var(--navy-700); font-size: 1.1rem; margin-top: 4px; }
+.order-actions { display: flex; gap: 10px; }
+.order-actions a, .order-actions button { padding: 8px 14px; font-size: 0.85rem; border-radius: var(--r-md); border: none; cursor: pointer; transition: all .2s; }
+.btn-download { background: var(--turq-600); color: #fff; text-decoration: none; display: inline-block; }
+.btn-download:hover { background: var(--turq-500); }
+.btn-download:disabled { opacity: 0.5; cursor: not-allowed; }
+.status-badge { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: var(--r-pill); }
+.status-paid { background: rgba(16,185,129,.12); color: var(--turq-600); }
+.status-invoiced { background: rgba(34,197,94,.12); color: #16a34a; }
+.status-pending { background: rgba(255,193,7,.12); color: #f59e0b; }
+.no-orders { text-align: center; padding: 28px; color: var(--slate); }
+.no-orders p { margin: 8px 0 0; }
+
 /* CRITICAL ALERT */
 .critical-alert { background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(229, 72, 72, 0.1)); border: 2px solid #ef4444; border-radius: var(--r-lg); padding: 20px 24px; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start; }
 .critical-alert svg { width: 28px; height: 28px; color: #ef4444; flex-shrink: 0; margin-top: 2px; }
@@ -232,6 +251,13 @@
             <div class="kv"><span class="k">Volume total</span><span class="v">1,84 CBM</span></div>
             <div class="kv"><span class="k">Île</span><span class="v" id="dashIsland">Martinique</span></div>
           </div>
+
+          <!-- ORDERS HISTORY -->
+          <div class="orders-section" id="ordersSection" style="display: none;">
+            <h4 style="margin-bottom: 16px;">📋 Mes factures</h4>
+            <div id="ordersList"></div>
+          </div>
+
           <a href="simulateur.html" class="btn btn-accent btn-block">Nouvelle estimation</a>
 
           <!-- PAYMENT SECTION -->
@@ -375,7 +401,51 @@
     $("#authView").style.display = "none";
     $("#dashView").classList.add("show");
     clearMsg();
+    loadOrders(c.number);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function loadOrders(clientNumber) {
+    fetch("/api/orders/get-by-client", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clientNumber: clientNumber })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res.orders && res.orders.length > 0) {
+          renderOrders(res.orders);
+        } else {
+          $("#ordersList").innerHTML = '<div class="no-orders"><p>Aucune facture pour le moment</p></div>';
+        }
+      })
+      .catch(function (e) {
+        console.error("Erreur chargement factures:", e);
+        $("#ordersList").innerHTML = '<div class="no-orders"><p>Impossible de charger les factures</p></div>';
+      });
+  }
+
+  function renderOrders(orders) {
+    var html = "";
+    orders.forEach(function (order) {
+      var date = new Date(order.created_at).toLocaleDateString("fr-FR");
+      var statusClass = order.status === "invoiced" ? "status-invoiced" : order.status === "paid" ? "status-paid" : "status-pending";
+      var statusLabel = order.status === "invoiced" ? "Facture" : order.status === "paid" ? "Payé" : "En attente";
+      var downloadBtn = order.invoice_url
+        ? '<a href="' + order.invoice_url + '" target="_blank" class="btn-download">📥 Télécharger</a>'
+        : '<button class="btn-download" disabled>En attente...</button>';
+
+      html += '<div class="order-item">'
+        + '<div class="order-info">'
+        + '<span class="order-date">' + date + '</span>'
+        + '<div class="order-cbm">' + parseFloat(order.cbm || 0).toFixed(2) + ' CBM</div>'
+        + '<span class="status-badge ' + statusClass + '">' + statusLabel + '</span>'
+        + '</div>'
+        + '<div class="order-actions">' + downloadBtn + '</div>'
+        + '</div>';
+    });
+    $("#ordersList").innerHTML = html;
+    $("#ordersSection").style.display = "block";
   }
 
   // auto-login if returning
