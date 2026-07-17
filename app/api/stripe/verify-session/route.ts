@@ -32,15 +32,19 @@ export async function POST(request: NextRequest) {
         const amount = (session.amount_total || 0) / 100
 
         // Create order in Supabase
-        await supabase.from('orders').insert({
-          client_number: clientNumber,
-          client_email: session.customer_email,
-          cbm: cbm,
-          amount_eur: amount,
-          stripe_session_id: sessionId,
-          invoice_number: sessionId,
-          status: 'paid',
-        }).catch(err => console.error('Supabase order error:', err))
+        try {
+          await supabase.from('orders').insert({
+            client_number: clientNumber,
+            client_email: session.customer_email,
+            cbm: cbm,
+            amount_eur: amount,
+            stripe_session_id: sessionId,
+            invoice_number: sessionId,
+            status: 'paid',
+          })
+        } catch (orderErr) {
+          console.error('Supabase order error:', orderErr)
+        }
 
         await resend.emails.send({
           from: 'Caribbean Supply <contact@caribbeansupply.net>',
