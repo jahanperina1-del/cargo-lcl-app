@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe-client'
-import { sendPaymentConfirmationEmail } from '@/lib/email'
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,24 +19,25 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.retrieve(sessionId)
 
     if (session.payment_status === 'paid') {
-      // Send confirmation email
+      // Send confirmation email with Resend template
       if (session.customer_email && session.metadata) {
         const cbm = parseFloat(session.metadata.cbm || '0')
         const clientNumber = session.metadata.clientNumber || 'N/A'
         const clientName = session.metadata.clientName || 'Client'
         const amount = (session.amount_total || 0) / 100
 
-        await sendPaymentConfirmationEmail(
-          {
+        await resend.emails.send({
+          from: 'Caribbean Supply <noreply@caribbeansupply.net>',
+          to: session.customer_email,
+          template: 'payment-confirmation',
+          props: {
             firstName: clientName.split(' ')[0],
-            lastName: clientName.split(' ').slice(1).join(' ') || '',
-            email: session.customer_email,
-            clientNumber,
+            clientNumber: clientNumber,
+            cbm: cbm.toFixed(2),
+            amount: amount.toFixed(2),
+            invoiceNumber: sessionId,
           },
-          cbm,
-          amount,
-          sessionId
-        ).catch(err => console.error('Email sending failed:', err))
+        }).catch(err => console.error('Email error:', err))
       }
 
       return NextResponse.json({

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { registerClient } from '@/lib/auth'
 import { sendToGoogleSheet } from '@/lib/google-sheets'
-import { sendWelcomeEmail } from '@/lib/email'
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,13 +24,17 @@ export async function POST(request: NextRequest) {
     // Sync Google Sheets
     await sendToGoogleSheet({ type: 'client', ...result.client })
 
-    // Send welcome email
-    await sendWelcomeEmail({
-      firstName,
-      lastName,
-      email,
-      clientNumber: result.client!.clientNumber,
-    })
+    // Send welcome email with Resend template
+    await resend.emails.send({
+      from: 'Caribbean Supply <noreply@caribbeansupply.net>',
+      to: email,
+      template: 'welcome-email',
+      props: {
+        firstName: result.client!.firstName,
+        lastName: result.client!.lastName,
+        clientNumber: result.client!.clientNumber,
+      },
+    }).catch(err => console.error('Email error:', err))
 
     return NextResponse.json({ success: true, client: result.client })
   } catch (error) {
