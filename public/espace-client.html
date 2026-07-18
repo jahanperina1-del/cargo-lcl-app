@@ -77,6 +77,17 @@
 .logout { background: none; border: 1px solid var(--line-strong); color: var(--slate); font-family: var(--font-body); font-weight: 600; padding: 10px 18px; border-radius: var(--r-pill); cursor: pointer; transition: all .18s; }
 .logout:hover { border-color: var(--orange-500); color: var(--orange-600); }
 
+/* CONTAINER FILL GAUGE — rempli uniquement par les colis reçus vérifiés */
+.gauge-card { background: linear-gradient(160deg, var(--navy-700), var(--navy-900)); color: #fff; border-radius: var(--r-lg); padding: 22px; box-shadow: var(--sh-sm); margin-bottom: 18px; }
+.gauge-card h4 { color: #fff; font-family: var(--font-display); font-size: 1rem; margin-bottom: 4px; }
+.gauge-card .sub { color: #AFC0DD; font-size: 0.82rem; margin-bottom: 16px; }
+.gauge-bar-track { height: 14px; border-radius: 8px; background: rgba(255,255,255,.12); overflow: hidden; position: relative; }
+.gauge-bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--turq-500), var(--turq-400)); width: 0%; transition: width .5s cubic-bezier(.2,.7,.3,1); }
+.gauge-bar-fill.full { background: linear-gradient(90deg, var(--orange-500), var(--orange-400)); }
+.gauge-meta { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.85rem; color: #C6D2E6; }
+.gauge-meta b { color: var(--turq-400); font-family: var(--font-display); }
+.gauge-meta .pct { color: #fff; font-weight: 700; font-family: var(--font-display); font-size: 1.05rem; }
+
 /* ORDERS & INVOICES */
 .orders-section { margin-top: 30px; }
 .order-item { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
@@ -291,6 +302,19 @@
             <div class="kv"><span class="k">Île</span><span class="v" id="dashIsland">Martinique</span></div>
           </div>
 
+          <!-- CONTAINER FILL GAUGE (colis reçus uniquement, tous clients) -->
+          <div class="gauge-card">
+            <h4>🚢 Remplissage du conteneur</h4>
+            <p class="sub" id="gaugeIsland">Colis reçus et vérifiés — Martinique</p>
+            <div class="gauge-bar-track">
+              <div class="gauge-bar-fill" id="gaugeFill" style="width:0%"></div>
+            </div>
+            <div class="gauge-meta">
+              <span><b id="gaugeCbm">0</b> / 67 CBM</span>
+              <span class="pct" id="gaugePct">0%</span>
+            </div>
+          </div>
+
           <!-- EXPEDITION: REGROUPER MA MARCHANDISE -->
           <div class="expedition-section">
             <h4>📦 Commencer à regrouper ma marchandise</h4>
@@ -485,11 +509,29 @@
     clearMsg();
     loadOrders(c.number);
     loadExpeditions(c.number, c.destCode);
+    loadContainerFill(c.destCode, c.island);
     var waBtn = $("#waInvoiceBtn");
     if (waBtn) {
       waBtn.href = "https://wa.me/8619700268583?text=" + encodeURIComponent("Bonjour, voici ma facture fournisseur. Mon N° client : " + c.number);
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function loadContainerFill(destCode, islandName) {
+    $("#gaugeIsland").textContent = "Colis reçus et vérifiés — " + (islandName || "");
+    fetch("/api/container-fill")
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        var containers = res.containers || [];
+        var mine = containers.find(function (c) { return c.destCode === destCode; });
+        if (!mine) return;
+        var pct = Math.min(100, mine.fillPercentage || 0);
+        $("#gaugeFill").style.width = pct + "%";
+        $("#gaugeFill").className = "gauge-bar-fill" + (pct >= 100 ? " full" : "");
+        $("#gaugeCbm").textContent = (mine.receivedCbm || 0).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        $("#gaugePct").textContent = pct.toFixed(0) + "%";
+      })
+      .catch(function (e) { console.error("Erreur jauge conteneur:", e); });
   }
 
   // ---------------------------------------------

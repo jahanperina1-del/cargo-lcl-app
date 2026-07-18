@@ -86,6 +86,12 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    if (action === 'containerFill') {
+      const fill = buildReceivedContainerFill();
+      return ContentService.createTextOutput(JSON.stringify(fill))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     const tracking = buildContainerTracking(ss);
 
     return ContentService.createTextOutput(JSON.stringify(tracking))
@@ -134,6 +140,52 @@ function getClientExpeditions(clientNumber, destination) {
   // Plus récent en premier
   results.reverse();
   return results;
+}
+
+// ============================================
+// Jauge de remplissage conteneur — UNIQUEMENT les colis marqués "reçu"
+// au warehouse, tous clients confondus, par île (fichier dédié)
+// ============================================
+function buildReceivedContainerFill() {
+  const destinations = ['MTQ', 'GLP', 'GUY'];
+  const destNames = ['Martinique', 'Guadeloupe', 'Guyane'];
+  const containers = [];
+
+  for (let i = 0; i < destinations.length; i++) {
+    const destCode = destinations[i];
+    const ss = getExpeditionSpreadsheet(destCode);
+    const sheetName = getExpeditionSheetName(destCode);
+    const sheet = ss.getSheetByName(sheetName);
+
+    let receivedCbm = 0;
+    if (sheet && sheet.getLastRow() >= 2) {
+      const allData = sheet.getDataRange().getValues();
+      const headerRow = allData[0];
+      const cbmCol = headerRow.indexOf('CBM Total');
+      const statusCol = headerRow.indexOf('Statut');
+
+      for (let j = 1; j < allData.length; j++) {
+        const status = (allData[j][statusCol] || '').toString().toLowerCase();
+        if (status.indexOf('reçu') !== -1 || status.indexOf('recu') !== -1) {
+          receivedCbm += parseFloat(allData[j][cbmCol]) || 0;
+        }
+      }
+    }
+
+    const fillPercentage = Math.min(100, (receivedCbm / CONTAINER_CAPACITY) * 100);
+    const status = receivedCbm === 0 ? 'vide' : (receivedCbm >= CONTAINER_CAPACITY ? 'plein' : 'en_cours');
+
+    containers.push({
+      destCode: destCode,
+      destination: destNames[i],
+      receivedCbm: Math.round(receivedCbm * 100) / 100,
+      capacity: CONTAINER_CAPACITY,
+      fillPercentage: Math.round(fillPercentage * 10) / 10,
+      status: status,
+    });
+  }
+
+  return { containers: containers, lastUpdated: new Date().toISOString() };
 }
 
 // ============================================
