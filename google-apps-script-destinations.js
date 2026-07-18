@@ -113,7 +113,6 @@ function getClientExpeditions(clientNumber, destination) {
   if (!sheet || sheet.getLastRow() < 2) return [];
 
   ensureIdColumn(sheet);
-  ensureAlertColumn(sheet);
 
   const allData = sheet.getDataRange().getValues();
   const headerRow = allData[0];
@@ -124,7 +123,6 @@ function getClientExpeditions(clientNumber, destination) {
   const cbmCol = headerRow.indexOf('CBM Total');
   const statusCol = headerRow.indexOf('Statut');
   const idCol = headerRow.indexOf('ID');
-  const alertCol = headerRow.indexOf('Alerte');
 
   const results = [];
   for (let i = 1; i < allData.length; i++) {
@@ -136,25 +134,12 @@ function getClientExpeditions(clientNumber, destination) {
         weight: allData[i][weightCol],
         cbm: allData[i][cbmCol],
         status: allData[i][statusCol],
-        alert: allData[i][alertCol] || '',
       });
     }
   }
   // Plus récent en premier
   results.reverse();
   return results;
-}
-
-// ============================================
-// S'assure que la colonne Alerte existe (batteries / sans certif)
-// ============================================
-function ensureAlertColumn(sheet) {
-  const lastCol = sheet.getLastColumn();
-  const headerRow = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
-  if (headerRow.indexOf('Alerte') === -1) {
-    sheet.getRange(1, lastCol + 1).setValue('Alerte');
-    sheet.getRange(1, lastCol + 1).setFontWeight('bold').setBackground('#dc2626').setFontColor('#FFFFFF');
-  }
 }
 
 // ============================================
@@ -353,12 +338,10 @@ function appendExpedition(data, destination) {
       'Destination',
       'Statut',
       'ID',
-      'Alerte',
     ]);
   }
 
   ensureIdColumn(sheet);
-  ensureAlertColumn(sheet);
   const expeditionId = Utilities.getUuid();
 
   // Ajouter la ligne
@@ -373,7 +356,6 @@ function appendExpedition(data, destination) {
     destination,
     'Annoncé',
     expeditionId,
-    data.alert || '',
   ]);
 
   // Formater l'en-tête

@@ -4,7 +4,7 @@ import { sendToGoogleSheet } from '@/lib/google-sheets'
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
-    const { clientNumber, name, email, destination, description, weight, cbm, alert } = data
+    const { clientNumber, name, email, destination, description, weight, cbm } = data
 
     if (!clientNumber || !cbm) {
       return NextResponse.json({ error: 'Numéro client et CBM requis' }, { status: 400 })
@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
       description: description || '',
       weight: weight || 0,
       cbm: cbm,
-      alert: alert || '',
     })
 
     if (!ok) {
