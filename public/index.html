@@ -450,10 +450,10 @@
     <div style="text-align: center; margin-bottom: 60px;">
       <span class="eyebrow">État du réseau</span>
       <h2 style="margin-top: 14px">Remplissage des conteneurs</h2>
-      <p style="color: #666; margin-top: 12px; font-size: 15px;">Suivi en temps réel de nos groupages Martinique et Guadeloupe</p>
+      <p style="color: #666; margin-top: 12px; font-size: 15px;">Colis reçus et vérifiés au warehouse — Martinique, Guadeloupe et Guyane</p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 40px; max-width: 900px; margin: 0 auto;" id="containers-preview">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; max-width: 1180px; margin: 0 auto;" id="containers-preview">
       <div style="text-align: center; padding: 40px; color: #999;">
         <div style="font-size: 24px; margin-bottom: 12px;">⏳</div>
         Chargement des données…
@@ -518,41 +518,44 @@
 <script src="map.js"></script>
 
 <script>
-// Charger les stats des conteneurs sur la page d'accueil
+// Charger le remplissage réel des conteneurs (colis reçus et vérifiés uniquement)
 (function() {
-  const destinations = {
-    MTQ: { name: 'Martinique', flag: '🇲🇶' },
-    GLP: { name: 'Guadeloupe', flag: '🇬🇵' },
-  };
+  const flags = { MTQ: '🇲🇶', GLP: '🇬🇵', GUY: '🇬🇫' };
 
   async function loadContainers() {
     try {
-      const res = await fetch('/api/container-stats');
+      const res = await fetch('/api/container-fill');
       const data = await res.json();
       const grid = document.getElementById('containers-preview');
+      const list = data.containers || [];
+
+      if (list.length === 0) {
+        grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #999; grid-column: 1/-1;">Données indisponibles pour le moment</div>';
+        return;
+      }
 
       grid.innerHTML = '';
 
-      Object.entries(destinations).forEach(([code, dest]) => {
-        const stats = data.containers[code];
-        const percent = stats.percent;
-        const statusClass = percent >= 100 ? 'full' : percent >= 50 ? 'filling' : 'empty';
+      list.forEach(function (stats) {
+        const percent = Math.min(100, stats.fillPercentage || 0);
+        const flag = flags[stats.destCode] || '🚢';
+        const statusLabel = stats.status === 'plein' ? 'PLEIN' : stats.status === 'en_cours' ? 'EN COURS' : 'VIDE';
 
         const card = document.createElement('div');
         card.style.cssText = 'background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,.08); transition: transform .3s ease';
         card.innerHTML = `
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-            <div style="font-size: 32px; margin-right: 12px;">${dest.flag}</div>
+            <div style="font-size: 32px; margin-right: 12px;">${flag}</div>
             <div style="flex: 1;">
-              <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: #15264A;">${dest.name}</h3>
-              <div style="font-size: 13px; color: #999; margin-top: 4px;">${stats.percent >= 100 ? 'PLEIN' : stats.percent >= 50 ? 'EN COURS' : 'VIDE'}</div>
+              <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: #15264A;">${stats.destination}</h3>
+              <div style="font-size: 13px; color: #999; margin-top: 4px;">${statusLabel}</div>
             </div>
           </div>
 
           <div style="margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px;">
               <span style="color: #666;">Remplissage</span>
-              <span style="font-weight: 600; color: #15264A; font-family: monospace;">${percent}%</span>
+              <span style="font-weight: 600; color: #15264A; font-family: monospace;">${percent.toFixed(0)}%</span>
             </div>
             <div style="height: 24px; background: #f0f0f0; border-radius: 12px; overflow: hidden;">
               <div style="height: 100%; width: ${percent}%; background: linear-gradient(90deg, #16C6C0, #00B8B0); border-radius: 12px; transition: width .6s ease;"></div>
@@ -561,11 +564,11 @@
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px; padding-top: 16px; border-top: 1px solid #eee;">
             <div style="text-align: center;">
-              <div style="font-weight: 600; color: #16C6C0; font-family: monospace; font-size: 18px;">${stats.cbm.toFixed(1)}</div>
-              <div style="color: #999; margin-top: 4px;">CBM remplis</div>
+              <div style="font-weight: 600; color: #16C6C0; font-family: monospace; font-size: 18px;">${stats.receivedCbm.toFixed(1)}</div>
+              <div style="color: #999; margin-top: 4px;">CBM reçus</div>
             </div>
             <div style="text-align: center;">
-              <div style="font-weight: 600; color: #999; font-family: monospace; font-size: 18px;">${(stats.capacity - stats.cbm).toFixed(1)}</div>
+              <div style="font-weight: 600; color: #999; font-family: monospace; font-size: 18px;">${Math.max(0, stats.capacity - stats.receivedCbm).toFixed(1)}</div>
               <div style="color: #999; margin-top: 4px;">CBM restants</div>
             </div>
           </div>
