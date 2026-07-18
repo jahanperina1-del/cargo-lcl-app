@@ -1,34 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!
-)
+const WEBHOOK_URL = process.env.GOOGLE_SHEET_WEBHOOK || ''
 
 export async function POST(request: NextRequest) {
   try {
-    const { clientNumber } = await request.json()
+    const { clientNumber, destCode } = await request.json()
 
     if (!clientNumber) {
       return NextResponse.json({ error: 'Client number requis' }, { status: 400 })
     }
 
-    const { data, error } = await supabase
-      .from('expeditions')
-      .select('*')
-      .eq('client_number', clientNumber)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (!WEBHOOK_URL) {
+      return NextResponse.json({ expeditions: [] })
     }
 
-    return NextResponse.json({ expeditions: data || [] })
+    const url = `${WEBHOOK_URL}?action=expeditions&clientNumber=${encodeURIComponent(clientNumber)}&destination=${encodeURIComponent(destCode || 'MTQ')}`
+    const response = await fetch(url)
+    const result = await response.json()
+
+    return NextResponse.json({ expeditions: result.expeditions || [] })
   } catch (error: any) {
     console.error('Erreur récupération expéditions:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ expeditions: [] })
   }
 }

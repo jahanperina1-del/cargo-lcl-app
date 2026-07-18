@@ -55,12 +55,22 @@ function doPost(e) {
 }
 
 // ============================================
-// Fonction doGet pour retourner le suivi en temps réel
-// Appelée par l'API container-tracking
+// Fonction doGet — suivi conteneurs (défaut) ou expéditions d'un client
+// (?action=expeditions&clientNumber=XXX&destination=MTQ)
 // ============================================
 function doGet(e) {
   try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const action = e.parameter && e.parameter.action;
+
+    if (action === 'expeditions') {
+      const clientNumber = e.parameter.clientNumber || '';
+      const destination = e.parameter.destination || 'MTQ';
+      const expeditions = getClientExpeditions(ss, clientNumber, destination);
+      return ContentService.createTextOutput(JSON.stringify({ expeditions: expeditions }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     const tracking = buildContainerTracking(ss);
 
     return ContentService.createTextOutput(JSON.stringify(tracking))
@@ -70,6 +80,40 @@ function doGet(e) {
     return ContentService.createTextOutput(JSON.stringify({ error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+// ============================================
+// Récupère les expéditions d'un client depuis son onglet destination
+// ============================================
+function getClientExpeditions(ss, clientNumber, destination) {
+  const sheetName = getExpeditionSheetName(destination);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet || sheet.getLastRow() < 2) return [];
+
+  const allData = sheet.getDataRange().getValues();
+  const headerRow = allData[0];
+  const dateCol = headerRow.indexOf('Date');
+  const numCol = headerRow.indexOf('N° Client');
+  const descCol = headerRow.indexOf('Colis');
+  const weightCol = headerRow.indexOf('Poids Total (kg)');
+  const cbmCol = headerRow.indexOf('CBM Total');
+  const statusCol = headerRow.indexOf('Statut');
+
+  const results = [];
+  for (let i = 1; i < allData.length; i++) {
+    if (allData[i][numCol] === clientNumber) {
+      results.push({
+        date: allData[i][dateCol],
+        description: allData[i][descCol],
+        weight: allData[i][weightCol],
+        cbm: allData[i][cbmCol],
+        status: allData[i][statusCol],
+      });
+    }
+  }
+  // Plus récent en premier
+  results.reverse();
+  return results;
 }
 
 // ============================================

@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendToGoogleSheet } from '@/lib/google-sheets'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!
-)
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,22 +8,6 @@ export async function POST(request: NextRequest) {
 
     if (!clientNumber || !cbm) {
       return NextResponse.json({ error: 'Numéro client et CBM requis' }, { status: 400 })
-    }
-
-    // Sauvegarde persistante dans Supabase (survit même si le Sheet est indisponible)
-    try {
-      await supabase.from('expeditions').insert({
-        client_number: clientNumber,
-        client_email: email || '',
-        client_name: name || '',
-        description: description || '',
-        weight: weight || 0,
-        cbm: cbm,
-        destination: destination || 'Martinique',
-        status: 'annonce',
-      })
-    } catch (dbErr) {
-      console.error('Supabase expedition error:', dbErr)
     }
 
     const ok = await sendToGoogleSheet({

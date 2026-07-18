@@ -481,7 +481,7 @@
     $("#dashView").classList.add("show");
     clearMsg();
     loadOrders(c.number);
-    loadExpeditions(c.number);
+    loadExpeditions(c.number, c.destCode);
     var waBtn = $("#waInvoiceBtn");
     if (waBtn) {
       waBtn.href = "https://wa.me/8619700268583?text=" + encodeURIComponent("Bonjour, voici ma facture fournisseur. Mon N° client : " + c.number);
@@ -602,7 +602,7 @@
         setTimeout(function () { confirm.classList.remove("show"); }, 6000);
         expParcels = [expNewParcel()];
         expRender();
-        loadExpeditions(c.number);
+        loadExpeditions(c.number, c.destCode);
       })
       .catch(function () {
         alert("Erreur lors de l'envoi. Réessayez.");
@@ -613,11 +613,11 @@
       });
   });
 
-  function loadExpeditions(clientNumber) {
+  function loadExpeditions(clientNumber, destCode) {
     fetch("/api/expeditions/get-by-client", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clientNumber: clientNumber })
+      body: JSON.stringify({ clientNumber: clientNumber, destCode: destCode })
     })
       .then(function (r) { return r.json(); })
       .then(function (res) {
@@ -642,16 +642,14 @@
   }
 
   function renderExpeditionsList(list) {
-    var statusLabels = { annonce: "Annoncé", recu: "Reçu au warehouse", expedie: "Expédié" };
+    var statusLabels = { "Annoncé": "Annoncé", "Reçu au warehouse": "Reçu au warehouse", "Expédié": "Expédié" };
     var html = "";
     list.forEach(function (exp) {
-      var date = new Date(exp.created_at).toLocaleDateString("fr-FR");
-      var statusKey = exp.status || "annonce";
-      var statusClass = statusKey === "expedie" ? "status-invoiced" : statusKey === "recu" ? "status-paid" : "status-pending";
-      var statusLabel = statusLabels[statusKey] || "Annoncé";
+      var statusLabel = exp.status || "Annoncé";
+      var statusClass = statusLabel === "Expédié" ? "status-invoiced" : statusLabel === "Reçu au warehouse" ? "status-paid" : "status-pending";
       html += '<div class="order-item">'
         + '<div class="order-info">'
-        + '<span class="order-date">' + date + '</span>'
+        + '<span class="order-date">' + (exp.date || "") + '</span>'
         + '<div class="order-cbm">' + parseFloat(exp.cbm || 0).toFixed(2) + ' CBM</div>'
         + '<span class="status-badge ' + statusClass + '">' + statusLabel + '</span>'
         + '</div>'
