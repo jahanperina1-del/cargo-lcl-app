@@ -54,6 +54,8 @@ function doPost(e) {
       appendQuote(ss, data, destination);
     } else if (type === 'expedition') {
       appendExpedition(data, destination);
+    } else if (type === 'expedition_delete') {
+      deleteExpedition(data, destination);
     } else if (type === 'payment') {
       updatePaymentStatus(ss, data, destination);
     }
@@ -104,6 +106,8 @@ function getClientExpeditions(clientNumber, destination) {
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet || sheet.getLastRow() < 2) return [];
 
+  ensureIdColumn(sheet);
+
   const allData = sheet.getDataRange().getValues();
   const headerRow = allData[0];
   const dateCol = headerRow.indexOf('Date');
@@ -112,11 +116,13 @@ function getClientExpeditions(clientNumber, destination) {
   const weightCol = headerRow.indexOf('Poids Total (kg)');
   const cbmCol = headerRow.indexOf('CBM Total');
   const statusCol = headerRow.indexOf('Statut');
+  const idCol = headerRow.indexOf('ID');
 
   const results = [];
   for (let i = 1; i < allData.length; i++) {
     if (allData[i][numCol] === clientNumber) {
       results.push({
+        id: allData[i][idCol] || '',
         date: allData[i][dateCol],
         description: allData[i][descCol],
         weight: allData[i][weightCol],
@@ -128,6 +134,48 @@ function getClientExpeditions(clientNumber, destination) {
   // Plus récent en premier
   results.reverse();
   return results;
+}
+
+// ============================================
+// S'assure que la colonne ID existe (ajoutée à la fin pour ne pas
+// décaler les données déjà présentes dans les onglets existants)
+// ============================================
+function ensureIdColumn(sheet) {
+  const lastCol = sheet.getLastColumn();
+  const headerRow = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  if (headerRow.indexOf('ID') === -1) {
+    sheet.getRange(1, lastCol + 1).setValue('ID');
+    sheet.getRange(1, lastCol + 1).setFontWeight('bold').setBackground('#0FAFAA').setFontColor('#FFFFFF');
+  }
+}
+
+// ============================================
+// Annule une expédition annoncée (uniquement si pas encore reçue)
+// ============================================
+function deleteExpedition(data, destination) {
+  const ss = getExpeditionSpreadsheet(destination);
+  const sheetName = getExpeditionSheetName(destination);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet || sheet.getLastRow() < 2) return;
+
+  ensureIdColumn(sheet);
+
+  const allData = sheet.getDataRange().getValues();
+  const headerRow = allData[0];
+  const numCol = headerRow.indexOf('N° Client');
+  const statusCol = headerRow.indexOf('Statut');
+  const idCol = headerRow.indexOf('ID');
+
+  for (let i = 1; i < allData.length; i++) {
+    if (allData[i][idCol] === data.id && allData[i][numCol] === data.clientNumber) {
+      const status = (allData[i][statusCol] || '').toString().toLowerCase();
+      if (status.indexOf('reçu') !== -1 || status.indexOf('recu') !== -1) {
+        return; // Sécurité: jamais supprimer un colis déjà vérifié au warehouse
+      }
+      sheet.deleteRow(i + 1);
+      return;
+    }
+  }
 }
 
 // ============================================
@@ -237,8 +285,12 @@ function appendExpedition(data, destination) {
       'CBM Total',
       'Destination',
       'Statut',
+      'ID',
     ]);
   }
+
+  ensureIdColumn(sheet);
+  const expeditionId = Utilities.getUuid();
 
   // Ajouter la ligne
   sheet.appendRow([
@@ -251,16 +303,18 @@ function appendExpedition(data, destination) {
     data.cbm || '',
     destination,
     'Annoncé',
+    expeditionId,
   ]);
 
   // Formater l'en-tête
-  const headerRange = sheet.getRange(1, 1, 1, 9);
+  const lastCol = sheet.getLastColumn();
+  const headerRange = sheet.getRange(1, 1, 1, lastCol);
   headerRange.setFontWeight('bold');
   headerRange.setBackground('#0FAFAA');
   headerRange.setFontColor('#FFFFFF');
 
   // Auto-resize colonnes
-  sheet.autoResizeColumns(1, 9);
+  sheet.autoResizeColumns(1, lastCol);
 }
 
 // ============================================

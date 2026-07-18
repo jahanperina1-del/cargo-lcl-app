@@ -669,16 +669,44 @@
       var statusLabel = exp.status || "Annoncé";
       var received = isReceived(statusLabel);
       var statusClass = received ? "status-paid" : "status-pending";
+      var canDelete = !received && exp.id;
       html += '<div class="order-item">'
         + '<div class="order-info">'
         + '<span class="order-date">' + (exp.date || "") + '</span>'
         + '<div class="order-cbm">' + parseFloat(exp.cbm || 0).toFixed(2) + ' CBM</div>'
         + '<span class="status-badge ' + statusClass + '">' + (received ? "✅ Reçu au warehouse" : statusLabel) + '</span>'
         + '</div>'
+        + (canDelete ? '<div class="order-actions"><button type="button" class="btn-download" style="background:#dc2626" data-del-exp="' + exp.id + '">🗑️ Annuler</button></div>' : '')
         + '</div>';
     });
     $("#expeditionsList").innerHTML = html;
     $("#expeditionsSection").style.display = "block";
+
+    document.querySelectorAll('[data-del-exp]').forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (!confirm("Annuler ce colis annoncé ? Cette action est irréversible.")) return;
+        var c = load();
+        if (!c) return;
+        var expId = btn.getAttribute("data-del-exp");
+        btn.disabled = true;
+        btn.textContent = "Annulation…";
+        fetch("/api/expeditions/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ clientNumber: c.number, id: expId, destCode: c.destCode })
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (!res.success) throw new Error(res.error || "Erreur");
+            loadExpeditions(c.number, c.destCode);
+          })
+          .catch(function () {
+            alert("Impossible d'annuler ce colis. Réessayez.");
+            btn.disabled = false;
+            btn.textContent = "🗑️ Annuler";
+          });
+      });
+    });
   }
 
   var totalPaidCbm = 0;
