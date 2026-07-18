@@ -14,23 +14,19 @@ function initStripePayment() {
 
   if (!cbmInput || !payBtn) return
 
-  // Mettre à jour le montant en temps réel
-  cbmInput.addEventListener('input', () => {
-    const cbm = parseFloat(cbmInput.value) || 0
-    const amount = cbm * 380
-    amountDisplay.textContent = `${amount.toFixed(2)}€`
-  })
+  // Le CBM est calculé automatiquement (colis reçus et vérifiés au warehouse,
+  // moins ce qui est déjà payé) — le client ne le saisit plus lui-même.
 
   // Cliquer pour payer
   payBtn.addEventListener('click', async () => {
     const cbm = parseFloat(cbmInput.value)
 
     if (!cbm || cbm <= 0) {
-      alert('Veuillez entrer un volume valide (min 0.1 CBM)')
       return
     }
 
     const amount = cbm * 380
+    const restoreLabel = payBtn.textContent
 
     // Récupérer les infos client
     const client = JSON.parse(localStorage.getItem('cs_client') || '{}')
@@ -74,7 +70,7 @@ function initStripePayment() {
       alert('Erreur: ' + error.message)
     } finally {
       payBtn.disabled = false
-      payBtn.textContent = 'Payer avec Stripe'
+      payBtn.textContent = restoreLabel
     }
   })
 

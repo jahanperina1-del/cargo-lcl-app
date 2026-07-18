@@ -284,8 +284,10 @@
           </div>
           <div class="side-card">
             <h4>Récapitulatif</h4>
-            <div class="kv"><span class="k">Expéditions envoyées</span><span class="v" id="recapCount">0</span></div>
-            <div class="kv"><span class="k">Volume total</span><span class="v" id="recapCbm">0.00 CBM</span></div>
+            <div class="kv"><span class="k">📦 Colis en cours</span><span class="v" id="recapPendingCount">0</span></div>
+            <div class="kv"><span class="k">Volume en cours</span><span class="v" id="recapPendingCbm">0.00 CBM</span></div>
+            <div class="kv" style="border-top:1.5px solid var(--line);margin-top:6px;padding-top:12px"><span class="k">✅ Colis reçus (warehouse)</span><span class="v" id="recapReceivedCount">0</span></div>
+            <div class="kv"><span class="k">Volume reçu</span><span class="v" id="recapReceivedCbm">0.00 CBM</span></div>
             <div class="kv"><span class="k">Île</span><span class="v" id="dashIsland">Martinique</span></div>
           </div>
 
@@ -343,18 +345,18 @@
               <span style="font-size:1.3rem">🔥</span>
               <h4 style="color:var(--orange-600);margin:0">Places limitées dans le prochain conteneur</h4>
             </div>
-            <p class="muted" style="font-size:.88rem;margin-bottom:14px">Le conteneur se remplit vite. Payez dès maintenant pour réserver votre place (380€ HT/CBM).</p>
+            <p class="muted" style="font-size:.88rem;margin-bottom:14px">Montant calculé automatiquement selon vos colis vérifiés et reçus au warehouse (380€ HT/CBM).</p>
             <div class="field" style="margin-bottom:14px">
-              <label for="paymentCBM" style="font-size:.9rem">Volume à payer (CBM)</label>
-              <input class="input" id="paymentCBM" type="number" placeholder="0.5" step="0.1" min="0.1" />
+              <label for="paymentCBM" style="font-size:.9rem">Volume reçu à payer (CBM)</label>
+              <input class="input" id="paymentCBM" type="number" value="0" readonly style="background:var(--paper);cursor:not-allowed" />
             </div>
             <div style="background:rgba(22,198,192,.1);border-radius:8px;padding:10px;margin-bottom:12px;font-size:.85rem">
               <div style="display:flex;justify-content:space-between">
                 <span>Montant:</span>
-                <strong style="color:var(--turq-600)" id="paymentAmount">0€</strong>
+                <strong style="color:var(--turq-600)" id="paymentAmount">0,00€</strong>
               </div>
             </div>
-            <button class="btn btn-accent btn-block" id="stripePayBtn">⚡ Payer pour réserver ma place</button>
+            <button class="btn btn-accent btn-block" id="stripePayBtn" disabled>Rien à payer pour le moment</button>
           </div>
         </div>
       </div>
@@ -635,30 +637,51 @@
       });
   }
 
+  // Un colis compte comme "reçu" seulement si le mot "reçu" a été ajouté
+  // manuellement dans la colonne Statut du Google Sheet (vérification warehouse)
+  function isReceived(status) {
+    var s = (status || "").toString().toLowerCase().replace(/ç/g, "c").replace(/é/g, "e");
+    return s.indexOf("recu") !== -1;
+  }
+
+  var totalReceivedCbm = 0;
+
   function renderExpeditionsRecap(list) {
-    var totalCbm = 0;
-    list.forEach(function (exp) { totalCbm += parseFloat(exp.cbm || 0); });
-    $("#recapCount").textContent = list.length;
-    $("#recapCbm").textContent = totalCbm.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " CBM";
+    var pending = list.filter(function (exp) { return !isReceived(exp.status); });
+    var received = list.filter(function (exp) { return isReceived(exp.status); });
+
+    var pendingCbm = 0, receivedCbm = 0;
+    pending.forEach(function (exp) { pendingCbm += parseFloat(exp.cbm || 0); });
+    received.forEach(function (exp) { receivedCbm += parseFloat(exp.cbm || 0); });
+
+    $("#recapPendingCount").textContent = pending.length;
+    $("#recapPendingCbm").textContent = pendingCbm.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " CBM";
+    $("#recapReceivedCount").textContent = received.length;
+    $("#recapReceivedCbm").textContent = receivedCbm.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " CBM";
+
+    totalReceivedCbm = receivedCbm;
+    updatePaymentAmount();
   }
 
   function renderExpeditionsList(list) {
-    var statusLabels = { "Annoncé": "Annoncé", "Reçu au warehouse": "Reçu au warehouse", "Expédié": "Expédié" };
     var html = "";
     list.forEach(function (exp) {
       var statusLabel = exp.status || "Annoncé";
-      var statusClass = statusLabel === "Expédié" ? "status-invoiced" : statusLabel === "Reçu au warehouse" ? "status-paid" : "status-pending";
+      var received = isReceived(statusLabel);
+      var statusClass = received ? "status-paid" : "status-pending";
       html += '<div class="order-item">'
         + '<div class="order-info">'
         + '<span class="order-date">' + (exp.date || "") + '</span>'
         + '<div class="order-cbm">' + parseFloat(exp.cbm || 0).toFixed(2) + ' CBM</div>'
-        + '<span class="status-badge ' + statusClass + '">' + statusLabel + '</span>'
+        + '<span class="status-badge ' + statusClass + '">' + (received ? "✅ Reçu au warehouse" : statusLabel) + '</span>'
         + '</div>'
         + '</div>';
     });
     $("#expeditionsList").innerHTML = html;
     $("#expeditionsSection").style.display = "block";
   }
+
+  var totalPaidCbm = 0;
 
   function loadOrders(clientNumber) {
     fetch("/api/orders/get-by-client", {
@@ -668,8 +691,13 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (res) {
-        if (res.orders && res.orders.length > 0) {
-          renderOrders(res.orders);
+        var orders = res.orders || [];
+        totalPaidCbm = 0;
+        orders.forEach(function (o) { totalPaidCbm += parseFloat(o.cbm || 0); });
+        updatePaymentAmount();
+
+        if (orders.length > 0) {
+          renderOrders(orders);
         } else {
           $("#ordersList").innerHTML = '<div class="no-orders"><p>Aucune facture pour le moment</p></div>';
         }
@@ -678,6 +706,27 @@
         console.error("Erreur chargement factures:", e);
         $("#ordersList").innerHTML = '<div class="no-orders"><p>Impossible de charger les factures</p></div>';
       });
+  }
+
+  // Le client ne choisit pas le montant — le système calcule automatiquement
+  // ce qui reste dû (CBM reçu et vérifié au warehouse, moins ce qui est déjà payé)
+  function updatePaymentAmount() {
+    var cbmInput = $("#paymentCBM");
+    var amountDisplay = $("#paymentAmount");
+    var payBtn = $("#stripePayBtn");
+    if (!cbmInput || !amountDisplay || !payBtn) return;
+
+    var due = Math.max(0, Math.round((totalReceivedCbm - totalPaidCbm) * 100) / 100);
+    cbmInput.value = due;
+    amountDisplay.textContent = (due * 380).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "€";
+
+    if (due <= 0) {
+      payBtn.disabled = true;
+      payBtn.textContent = "Rien à payer pour le moment";
+    } else {
+      payBtn.disabled = false;
+      payBtn.textContent = "⚡ Payer pour réserver ma place";
+    }
   }
 
   function renderOrders(orders) {
