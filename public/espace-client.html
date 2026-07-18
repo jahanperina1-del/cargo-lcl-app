@@ -325,6 +325,18 @@
               <span>Volume total</span>
               <b id="expTotalCbm">0.00 CBM</b>
             </div>
+
+            <label style="display:flex;align-items:flex-start;gap:10px;background:#fffbeb;border:1.5px solid #f59e0b;border-radius:var(--r-md);padding:12px 14px;margin-bottom:14px;cursor:pointer">
+              <input type="checkbox" id="expBatteryCheck" style="margin-top:3px;width:16px;height:16px;flex-shrink:0" />
+              <span style="font-size:0.88rem;color:#92400e;line-height:1.5"><strong>⚠️ Ce colis contient des batteries et/ou des produits sans certification CE ?</strong></span>
+            </label>
+            <div id="expBatteryWarning" style="display:none;background:#fee2e2;border-left:4px solid #dc2626;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:0.86rem;color:#7f1d1d;line-height:1.6">
+              Un <strong>supplément</strong> s'applique et les documents suivants sont <strong>obligatoires</strong> avant l'envoi :
+              <br/>• Batteries : fiche <strong>UN38.3</strong>
+              <br/>• Sans certification : <strong>déclaration de conformité CE</strong>
+              <br/><a href="https://wa.me/8619700268583" target="_blank" rel="noopener" style="color:#dc2626;font-weight:700">📲 Envoyez-les nous sur WhatsApp avant d'expédier</a>
+            </div>
+
             <button type="button" class="btn-send-warehouse" id="expSendBtn">📤 Envoyer à la warehouse</button>
             <div class="exp-confirm" id="expConfirm">✅ Votre expédition a bien été envoyée à la warehouse !</div>
           </div>
@@ -611,6 +623,13 @@
     expRender();
   });
 
+  var expBatteryCheck = $("#expBatteryCheck");
+  if (expBatteryCheck) {
+    expBatteryCheck.addEventListener("change", function () {
+      $("#expBatteryWarning").style.display = expBatteryCheck.checked ? "block" : "none";
+    });
+  }
+
   $("#expSendBtn").addEventListener("click", function () {
     var c = load();
     if (!c) return;
@@ -621,6 +640,8 @@
       desc.push((i + 1) + ") " + p.l + "x" + p.w + "x" + p.h + "cm x" + p.qty + " " + p.kg + "kg/u");
     });
     if (totalCbm <= 0) return;
+
+    var hasBatteryOrNoCert = expBatteryCheck && expBatteryCheck.checked;
 
     var btn = $("#expSendBtn");
     btn.disabled = true;
@@ -636,7 +657,8 @@
         destination: c.destCode,
         description: desc.join(" | "),
         weight: Math.round(totalKg),
-        cbm: Math.round(totalCbm * 100) / 100
+        cbm: Math.round(totalCbm * 100) / 100,
+        alert: hasBatteryOrNoCert ? "Batterie / Sans certif" : ""
       })
     })
       .then(function (r) { return r.json(); })
@@ -647,6 +669,10 @@
         setTimeout(function () { confirm.classList.remove("show"); }, 6000);
         expParcels = [expNewParcel()];
         expRender();
+        if (expBatteryCheck) {
+          expBatteryCheck.checked = false;
+          $("#expBatteryWarning").style.display = "none";
+        }
         loadExpeditions(c.number, c.destCode);
       })
       .catch(function () {
@@ -717,6 +743,7 @@
         + '<span class="order-date">' + (exp.date || "") + '</span>'
         + '<div class="order-cbm">' + parseFloat(exp.cbm || 0).toFixed(2) + ' CBM</div>'
         + '<span class="status-badge ' + statusClass + '">' + (received ? "✅ Reçu au warehouse" : statusLabel) + '</span>'
+        + (exp.alert ? '<span class="status-badge" style="background:#fee2e2;color:#dc2626;margin-left:6px">⚠️ ' + exp.alert + '</span>' : '')
         + '</div>'
         + (canDelete ? '<div class="order-actions"><button type="button" class="btn-download" style="background:#dc2626" data-del-exp="' + exp.id + '">🗑️ Annuler</button></div>' : '')
         + '</div>';
