@@ -24,6 +24,19 @@ const SHEETS = {
 // Capacité des conteneurs en CBM
 const CONTAINER_CAPACITY = 67;
 
+// Fichiers Google Sheet DÉDIÉS pour les expéditions (un fichier séparé par île)
+const EXPEDITION_SPREADSHEETS = {
+  MTQ: SPREADSHEET_ID, // reste dans le fichier principal (déjà des données dedans)
+  GLP: '19fHqOviub01vlw4taq7Gu39wr8jzK3DhT0REjfAUstU',
+  GUY: '1uD2JryW9n9ZqZJD1eHBcT2tIP8PZccQiDtVybwYkFvQ',
+};
+
+function getExpeditionSpreadsheet(destination) {
+  const destCode = destination?.toUpperCase()?.substring(0, 3) || 'MTQ';
+  const id = EXPEDITION_SPREADSHEETS[destCode] || EXPEDITION_SPREADSHEETS.MTQ;
+  return SpreadsheetApp.openById(id);
+}
+
 // ============================================
 // Fonction appelée par POST depuis ton app
 // ============================================
@@ -40,7 +53,7 @@ function doPost(e) {
     } else if (type === 'devis') {
       appendQuote(ss, data, destination);
     } else if (type === 'expedition') {
-      appendExpedition(ss, data, destination);
+      appendExpedition(data, destination);
     } else if (type === 'payment') {
       updatePaymentStatus(ss, data, destination);
     }
@@ -66,7 +79,7 @@ function doGet(e) {
     if (action === 'expeditions') {
       const clientNumber = e.parameter.clientNumber || '';
       const destination = e.parameter.destination || 'MTQ';
-      const expeditions = getClientExpeditions(ss, clientNumber, destination);
+      const expeditions = getClientExpeditions(clientNumber, destination);
       return ContentService.createTextOutput(JSON.stringify({ expeditions: expeditions }))
         .setMimeType(ContentService.MimeType.JSON);
     }
@@ -83,9 +96,10 @@ function doGet(e) {
 }
 
 // ============================================
-// Récupère les expéditions d'un client depuis son onglet destination
+// Récupère les expéditions d'un client depuis le fichier de son île
 // ============================================
-function getClientExpeditions(ss, clientNumber, destination) {
+function getClientExpeditions(clientNumber, destination) {
+  const ss = getExpeditionSpreadsheet(destination);
   const sheetName = getExpeditionSheetName(destination);
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet || sheet.getLastRow() < 2) return [];
@@ -204,8 +218,10 @@ function appendQuote(ss, data, destination) {
 
 // ============================================
 // Ajoute une expédition réelle (colis envoyés à la warehouse)
+// Écrit dans le fichier Google Sheet dédié à l'île du client
 // ============================================
-function appendExpedition(ss, data, destination) {
+function appendExpedition(data, destination) {
+  const ss = getExpeditionSpreadsheet(destination);
   const sheetName = getExpeditionSheetName(destination);
   let sheet = getOrCreateSheet(ss, sheetName);
 
