@@ -284,8 +284,8 @@
           </div>
           <div class="side-card">
             <h4>Récapitulatif</h4>
-            <div class="kv"><span class="k">Expéditions en cours</span><span class="v">2</span></div>
-            <div class="kv"><span class="k">Volume total</span><span class="v">1,84 CBM</span></div>
+            <div class="kv"><span class="k">Expéditions envoyées</span><span class="v" id="recapCount">0</span></div>
+            <div class="kv"><span class="k">Volume total</span><span class="v" id="recapCbm">0.00 CBM</span></div>
             <div class="kv"><span class="k">Île</span><span class="v" id="dashIsland">Martinique</span></div>
           </div>
 
@@ -301,6 +301,12 @@
             </div>
             <button type="button" class="btn-send-warehouse" id="expSendBtn">📤 Envoyer à la warehouse</button>
             <div class="exp-confirm" id="expConfirm">✅ Votre expédition a bien été envoyée à la warehouse !</div>
+          </div>
+
+          <!-- EXPEDITIONS HISTORY -->
+          <div class="orders-section" id="expeditionsSection" style="display: none;">
+            <h4 style="margin-bottom: 16px;">📦 Mes expéditions envoyées</h4>
+            <div id="expeditionsList"></div>
           </div>
 
           <!-- ORDERS HISTORY -->
@@ -475,6 +481,7 @@
     $("#dashView").classList.add("show");
     clearMsg();
     loadOrders(c.number);
+    loadExpeditions(c.number);
     var waBtn = $("#waInvoiceBtn");
     if (waBtn) {
       waBtn.href = "https://wa.me/8619700268583?text=" + encodeURIComponent("Bonjour, voici ma facture fournisseur. Mon N° client : " + c.number);
@@ -595,6 +602,7 @@
         setTimeout(function () { confirm.classList.remove("show"); }, 6000);
         expParcels = [expNewParcel()];
         expRender();
+        loadExpeditions(c.number);
       })
       .catch(function () {
         alert("Erreur lors de l'envoi. Réessayez.");
@@ -604,6 +612,54 @@
         btn.textContent = "📤 Envoyer à la warehouse";
       });
   });
+
+  function loadExpeditions(clientNumber) {
+    fetch("/api/expeditions/get-by-client", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clientNumber: clientNumber })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        var list = res.expeditions || [];
+        renderExpeditionsRecap(list);
+        if (list.length > 0) {
+          renderExpeditionsList(list);
+        } else {
+          $("#expeditionsSection").style.display = "none";
+        }
+      })
+      .catch(function (e) {
+        console.error("Erreur chargement expéditions:", e);
+      });
+  }
+
+  function renderExpeditionsRecap(list) {
+    var totalCbm = 0;
+    list.forEach(function (exp) { totalCbm += parseFloat(exp.cbm || 0); });
+    $("#recapCount").textContent = list.length;
+    $("#recapCbm").textContent = totalCbm.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " CBM";
+  }
+
+  function renderExpeditionsList(list) {
+    var statusLabels = { annonce: "Annoncé", recu: "Reçu au warehouse", expedie: "Expédié" };
+    var html = "";
+    list.forEach(function (exp) {
+      var date = new Date(exp.created_at).toLocaleDateString("fr-FR");
+      var statusKey = exp.status || "annonce";
+      var statusClass = statusKey === "expedie" ? "status-invoiced" : statusKey === "recu" ? "status-paid" : "status-pending";
+      var statusLabel = statusLabels[statusKey] || "Annoncé";
+      html += '<div class="order-item">'
+        + '<div class="order-info">'
+        + '<span class="order-date">' + date + '</span>'
+        + '<div class="order-cbm">' + parseFloat(exp.cbm || 0).toFixed(2) + ' CBM</div>'
+        + '<span class="status-badge ' + statusClass + '">' + statusLabel + '</span>'
+        + '</div>'
+        + '</div>';
+    });
+    $("#expeditionsList").innerHTML = html;
+    $("#expeditionsSection").style.display = "block";
+  }
 
   function loadOrders(clientNumber) {
     fetch("/api/orders/get-by-client", {
