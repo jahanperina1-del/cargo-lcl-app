@@ -15,6 +15,9 @@ const SHEETS = {
   devisMTQ: 'Devis Martinique',
   devisGLP: 'Devis Guadeloupe',
   devisGUY: 'Devis Guyane',
+  expeditionsMTQ: 'Expéditions Martinique',
+  expeditionsGLP: 'Expéditions Guadeloupe',
+  expeditionsGUY: 'Expéditions Guyane',
   suivi: 'Suivi Conteneurs',
 };
 
@@ -36,6 +39,8 @@ function doPost(e) {
       appendClient(ss, data, destination);
     } else if (type === 'devis') {
       appendQuote(ss, data, destination);
+    } else if (type === 'expedition') {
+      appendExpedition(ss, data, destination);
     } else if (type === 'payment') {
       updatePaymentStatus(ss, data, destination);
     }
@@ -154,6 +159,51 @@ function appendQuote(ss, data, destination) {
 }
 
 // ============================================
+// Ajoute une expédition réelle (colis envoyés à la warehouse)
+// ============================================
+function appendExpedition(ss, data, destination) {
+  const sheetName = getExpeditionSheetName(destination);
+  let sheet = getOrCreateSheet(ss, sheetName);
+
+  // En-têtes si vide
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      'Date',
+      'N° Client',
+      'Nom',
+      'Email',
+      'Colis',
+      'Poids Total (kg)',
+      'CBM Total',
+      'Destination',
+      'Statut',
+    ]);
+  }
+
+  // Ajouter la ligne
+  sheet.appendRow([
+    new Date().toLocaleString('fr-FR'),
+    data.clientNumber || '',
+    data.name || '',
+    data.email || '',
+    data.description || '',
+    data.weight || '',
+    data.cbm || '',
+    destination,
+    'Annoncé',
+  ]);
+
+  // Formater l'en-tête
+  const headerRange = sheet.getRange(1, 1, 1, 9);
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#0FAFAA');
+  headerRange.setFontColor('#FFFFFF');
+
+  // Auto-resize colonnes
+  sheet.autoResizeColumns(1, 9);
+}
+
+// ============================================
 // Utilitaires
 // ============================================
 function getClientSheetName(destination) {
@@ -170,6 +220,14 @@ function getQuoteSheetName(destination) {
   if (destCode === 'GLP') return SHEETS.devisGLP;
   if (destCode === 'GUY') return SHEETS.devisGUY;
   return SHEETS.devisMTQ; // Default
+}
+
+function getExpeditionSheetName(destination) {
+  const destCode = destination?.toUpperCase()?.substring(0, 3) || 'MTQ';
+  if (destCode === 'MTQ') return SHEETS.expeditionsMTQ;
+  if (destCode === 'GLP') return SHEETS.expeditionsGLP;
+  if (destCode === 'GUY') return SHEETS.expeditionsGUY;
+  return SHEETS.expeditionsMTQ; // Default
 }
 
 function getOrCreateSheet(ss, sheetName) {

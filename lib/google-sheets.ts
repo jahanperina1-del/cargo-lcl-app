@@ -1,7 +1,7 @@
 const WEBHOOK_URL = process.env.GOOGLE_SHEET_WEBHOOK || ''
 
 interface SheetData {
-  type: 'client' | 'devis' | 'sourcing'
+  type: 'client' | 'devis' | 'sourcing' | 'expedition'
   [key: string]: any
 }
 

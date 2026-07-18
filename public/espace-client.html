@@ -96,6 +96,31 @@
 .no-orders { text-align: center; padding: 28px; color: var(--slate); }
 .no-orders p { margin: 8px 0 0; }
 
+/* EXPEDITION SECTION */
+.expedition-section { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; margin-bottom: 18px; }
+.expedition-section h4 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 6px; }
+.expedition-section .sub { color: var(--slate); font-size: 0.88rem; margin-bottom: 16px; }
+.exp-parcel { border: 1px dashed var(--line-strong); border-radius: var(--r-md); padding: 14px; margin-bottom: 12px; background: var(--paper); }
+.exp-parcel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.exp-parcel-head .t { font-weight: 700; font-family: var(--font-display); font-size: 0.88rem; color: var(--navy-700); }
+.exp-parcel-cbm { font-size: 0.8rem; color: var(--turq-600); font-weight: 600; }
+.exp-parcel-del { background: none; border: none; color: var(--slate-light); cursor: pointer; padding: 2px; }
+.exp-parcel-del svg { width: 16px; height: 16px; }
+.exp-field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.exp-field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 500px) { .exp-field-row-3 { grid-template-columns: 1fr 1fr; } }
+.exp-field label { display: block; font-size: 0.76rem; font-weight: 600; color: var(--slate); margin-bottom: 4px; }
+.exp-field input { width: 100%; font-size: 0.9rem; padding: 8px 10px; border: 1.5px solid var(--line-strong); border-radius: 8px; }
+.exp-add-parcel { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1.5px dashed var(--line-strong); color: var(--navy-700); font-weight: 600; font-size: 0.85rem; padding: 9px 14px; border-radius: var(--r-md); cursor: pointer; width: 100%; justify-content: center; margin-bottom: 14px; }
+.exp-add-parcel:hover { border-color: var(--turq-500); color: var(--turq-600); }
+.exp-total { background: rgba(22,198,192,.08); border-radius: var(--r-md); padding: 12px 14px; display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 0.92rem; }
+.exp-total b { color: var(--turq-600); }
+.btn-send-warehouse { width: 100%; background: var(--navy-700); color: #fff; padding: 13px; border: none; border-radius: var(--r-md); font-weight: 600; cursor: pointer; }
+.btn-send-warehouse:hover { background: var(--navy-600); }
+.btn-send-warehouse:disabled { opacity: 0.6; cursor: not-allowed; }
+.exp-confirm { display: none; background: rgba(16,185,129,.1); color: var(--turq-600); padding: 12px 14px; border-radius: var(--r-md); font-size: 0.9rem; font-weight: 600; margin-top: 12px; text-align: center; }
+.exp-confirm.show { display: block; }
+
 /* SUPPLIER INVOICES UPLOAD */
 .supplier-upload-section { background: linear-gradient(135deg, rgba(22,198,192,.08), rgba(56,217,210,.08)); border: 2px dashed var(--turq-500); border-radius: var(--r-lg); padding: 24px; margin-top: 20px; }
 .supplier-upload-section h4 { color: var(--turq-600); margin-bottom: 12px; }
@@ -262,6 +287,20 @@
             <div class="kv"><span class="k">Expéditions en cours</span><span class="v">2</span></div>
             <div class="kv"><span class="k">Volume total</span><span class="v">1,84 CBM</span></div>
             <div class="kv"><span class="k">Île</span><span class="v" id="dashIsland">Martinique</span></div>
+          </div>
+
+          <!-- EXPEDITION: REGROUPER MA MARCHANDISE -->
+          <div class="expedition-section">
+            <h4>📦 Commencer à regrouper ma marchandise</h4>
+            <p class="sub">Ajoutez les dimensions de vos colis puis envoyez l'information à la warehouse.</p>
+            <div id="expParcels"></div>
+            <button type="button" class="exp-add-parcel" id="expAddParcel">+ Ajouter un colis</button>
+            <div class="exp-total">
+              <span>Volume total</span>
+              <b id="expTotalCbm">0.00 CBM</b>
+            </div>
+            <button type="button" class="btn-send-warehouse" id="expSendBtn">📤 Envoyer à la warehouse</button>
+            <div class="exp-confirm" id="expConfirm">✅ Votre expédition a bien été envoyée à la warehouse !</div>
           </div>
 
           <!-- ORDERS HISTORY -->
@@ -442,6 +481,129 @@
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  // ---------------------------------------------
+  // Expédition — regrouper ma marchandise
+  // ---------------------------------------------
+  var expParcels = [];
+  var expPid = 0;
+
+  function expNewParcel() { return { id: ++expPid, l: 60, w: 40, h: 40, qty: 1, kg: 15 }; }
+
+  function expFmtNum(n, dec) { return n.toLocaleString("fr-FR", { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+
+  function expFieldNum(id, key, label, val) {
+    return '<div class="exp-field"><label>' + label + '</label>' +
+      '<input type="number" min="0" inputmode="decimal" data-ep="' + id + '" data-ek="' + key + '" value="' + val + '" /></div>';
+  }
+
+  function expRender() {
+    var box = $("#expParcels");
+    box.innerHTML = "";
+    expParcels.forEach(function (p, i) {
+      var cbm = (p.l * p.w * p.h / 1e6) * p.qty;
+      var el = document.createElement("div");
+      el.className = "exp-parcel";
+      el.innerHTML =
+        '<div class="exp-parcel-head"><span class="t">Colis ' + (i + 1) + '</span>' +
+        '<div style="display:flex;align-items:center;gap:10px"><span class="exp-parcel-cbm">' + expFmtNum(cbm, 3) + ' CBM</span>' +
+        (expParcels.length > 1 ? '<button type="button" class="exp-parcel-del" data-edel="' + p.id + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>' : '') +
+        '</div></div>' +
+        '<div class="exp-field-row-3">' +
+          expFieldNum(p.id, "l", "Long. (cm)", p.l) +
+          expFieldNum(p.id, "w", "Larg. (cm)", p.w) +
+          expFieldNum(p.id, "h", "Haut. (cm)", p.h) +
+        '</div>' +
+        '<div class="exp-field-row-2">' +
+          expFieldNum(p.id, "qty", "Quantité", p.qty) +
+          expFieldNum(p.id, "kg", "Poids unit. (kg)", p.kg) +
+        '</div>';
+      box.appendChild(el);
+    });
+    expBindInputs();
+    expCompute();
+  }
+
+  function expBindInputs() {
+    document.querySelectorAll('input[data-ep]').forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        var p = expParcels.find(function (x) { return x.id == inp.getAttribute("data-ep"); });
+        if (!p) return;
+        var v = parseFloat(inp.value) || 0;
+        p[inp.getAttribute("data-ek")] = v;
+        var head = inp.closest(".exp-parcel").querySelector(".exp-parcel-cbm");
+        var cbm = (p.l * p.w * p.h / 1e6) * p.qty;
+        head.textContent = expFmtNum(cbm, 3) + " CBM";
+        expCompute();
+      });
+    });
+    document.querySelectorAll('[data-edel]').forEach(function (b) {
+      b.addEventListener("click", function () {
+        expParcels = expParcels.filter(function (x) { return x.id != b.getAttribute("data-edel"); });
+        expRender();
+      });
+    });
+  }
+
+  function expCompute() {
+    var totalCbm = 0;
+    expParcels.forEach(function (p) { totalCbm += (p.l * p.w * p.h / 1e6) * p.qty; });
+    $("#expTotalCbm").textContent = expFmtNum(totalCbm, 2) + " CBM";
+  }
+
+  expParcels.push(expNewParcel());
+  expRender();
+
+  $("#expAddParcel").addEventListener("click", function () {
+    expParcels.push(expNewParcel());
+    expRender();
+  });
+
+  $("#expSendBtn").addEventListener("click", function () {
+    var c = load();
+    if (!c) return;
+    var totalCbm = 0, totalKg = 0, desc = [];
+    expParcels.forEach(function (p, i) {
+      totalCbm += (p.l * p.w * p.h / 1e6) * p.qty;
+      totalKg += p.kg * p.qty;
+      desc.push((i + 1) + ") " + p.l + "x" + p.w + "x" + p.h + "cm x" + p.qty + " " + p.kg + "kg/u");
+    });
+    if (totalCbm <= 0) return;
+
+    var btn = $("#expSendBtn");
+    btn.disabled = true;
+    btn.textContent = "Envoi en cours…";
+
+    fetch("/api/expeditions/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clientNumber: c.number,
+        name: c.name,
+        email: c.email,
+        destination: c.island,
+        description: desc.join(" | "),
+        weight: Math.round(totalKg),
+        cbm: Math.round(totalCbm * 100) / 100
+      })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res.success) throw new Error(res.error || "Erreur d'envoi");
+        var confirm = $("#expConfirm");
+        confirm.classList.add("show");
+        setTimeout(function () { confirm.classList.remove("show"); }, 6000);
+        expParcels = [expNewParcel()];
+        expRender();
+      })
+      .catch(function () {
+        alert("Erreur lors de l'envoi. Réessayez.");
+      })
+      .finally(function () {
+        btn.disabled = false;
+        btn.textContent = "📤 Envoyer à la warehouse";
+      });
+  });
 
   function loadOrders(clientNumber) {
     fetch("/api/orders/get-by-client", {
