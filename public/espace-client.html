@@ -339,20 +339,13 @@
 
           <a href="simulateur.html" class="btn btn-accent btn-block">Nouvelle estimation</a>
 
-          <!-- URGENCY: RESERVER SA PLACE -->
-          <div class="side-card" style="background:linear-gradient(135deg, rgba(255,122,61,.12), rgba(255,122,61,.04));border:1.5px solid rgba(255,122,61,.35)">
+          <!-- PAYMENT SECTION -->
+          <div class="side-card" style="background:linear-gradient(135deg, rgba(255,122,61,.12), rgba(22,198,192,.08));border:1.5px solid rgba(255,122,61,.35)">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
               <span style="font-size:1.3rem">🔥</span>
               <h4 style="color:var(--orange-600);margin:0">Places limitées dans le prochain conteneur</h4>
             </div>
-            <p class="muted" style="font-size:.88rem;margin-bottom:14px">Le conteneur se remplit vite. Payez dès maintenant pour réserver votre place et garantir le départ de vos colis.</p>
-            <button type="button" class="btn btn-accent btn-block" id="reserveSpotBtn">⚡ Payer pour réserver ma place</button>
-          </div>
-
-          <!-- PAYMENT SECTION -->
-          <div class="side-card" style="background:linear-gradient(135deg, rgba(22,198,192,.08), rgba(255,122,61,.08));border:1px solid rgba(22,198,192,.2)">
-            <h4 style="color:var(--turq-600)">💳 Payer en ligne</h4>
-            <p class="muted" style="font-size:.9rem;margin-bottom:14px">Payez votre CBM directement (380€ HT/CBM)</p>
+            <p class="muted" style="font-size:.88rem;margin-bottom:14px">Le conteneur se remplit vite. Payez dès maintenant pour réserver votre place (380€ HT/CBM).</p>
             <div class="field" style="margin-bottom:14px">
               <label for="paymentCBM" style="font-size:.9rem">Volume à payer (CBM)</label>
               <input class="input" id="paymentCBM" type="number" placeholder="0.5" step="0.1" min="0.1" />
@@ -363,7 +356,7 @@
                 <strong style="color:var(--turq-600)" id="paymentAmount">0€</strong>
               </div>
             </div>
-            <button class="btn btn-primary btn-block" id="stripePayBtn" style="background:linear-gradient(135deg, var(--turq-500), #16C6C0)">Payer avec Stripe</button>
+            <button class="btn btn-accent btn-block" id="stripePayBtn">⚡ Payer pour réserver ma place</button>
           </div>
         </div>
       </div>
@@ -497,19 +490,6 @@
       waBtn.href = "https://wa.me/8619700268583?text=" + encodeURIComponent("Bonjour, voici ma facture fournisseur. Mon N° client : " + c.number);
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  // Urgence — scroll direct vers le paiement pour réserver sa place
-  var reserveBtn = $("#reserveSpotBtn");
-  if (reserveBtn) {
-    reserveBtn.addEventListener("click", function () {
-      var target = $("#stripePayBtn");
-      if (target) {
-        target.closest(".side-card").scrollIntoView({ behavior: "smooth", block: "center" });
-        var cbmInput = $("#paymentCBM");
-        if (cbmInput) { setTimeout(function () { cbmInput.focus(); }, 400); }
-      }
-    });
   }
 
   // ---------------------------------------------
