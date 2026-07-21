@@ -102,9 +102,17 @@ body { background: linear-gradient(160deg, #15264A, #0C1A33); min-height: 100vh;
 
   document.querySelectorAll('.cat-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
+      var cat = btn.getAttribute('data-cat');
+
+      // Cargo = ton activité groupage existante, on redirige direct dessus
+      if (cat === 'cargo') {
+        window.location.href = 'index.html';
+        return;
+      }
+
       document.querySelectorAll('.cat-btn').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
-      selectedCategory = btn.getAttribute('data-cat');
+      selectedCategory = cat;
       document.getElementById('step2').classList.add('show');
       document.getElementById('leadContact').focus();
     });
