@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Demande — Caribbean Supply</title>
+<meta name="description" content="Sourcing, cargo, accompagnement en Chine : dites-nous ce qu'il vous faut, on revient vers vous rapidement." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+body { background: linear-gradient(160deg, #15264A, #0C1A33); min-height: 100vh; }
+.lead-wrap { max-width: 480px; margin: 0 auto; padding: clamp(24px,6vw,60px) 20px; }
+.lead-brand { display: flex; align-items: center; gap: 11px; justify-content: center; margin-bottom: 28px; }
+.lead-brand .brand-mark { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; background: linear-gradient(150deg, var(--navy-700), var(--navy-850)); }
+.lead-brand .brand-mark svg { width: 24px; height: 24px; }
+.lead-brand span { font-family: var(--font-display); font-weight: 700; color: #fff; font-size: 1.1rem; }
+
+.lead-card { background: #fff; border-radius: var(--r-xl); padding: clamp(24px,5vw,36px); box-shadow: var(--sh-lg); }
+.lead-card h1 { font-size: 1.4rem; text-align: center; margin-bottom: 6px; }
+.lead-card .sub { text-align: center; color: var(--slate); font-size: 0.92rem; margin-bottom: 24px; }
+
+.cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 6px; }
+.cat-btn { background: var(--paper); border: 1.5px solid var(--line-strong); border-radius: var(--r-md); padding: 16px 10px; text-align: center; cursor: pointer; transition: all .15s; font-family: var(--font-body); }
+.cat-btn:hover { border-color: var(--turq-500); background: rgba(22,198,192,.06); }
+.cat-btn.active { border-color: var(--turq-500); background: rgba(22,198,192,.1); box-shadow: 0 0 0 3px rgba(22,198,192,.12); }
+.cat-btn .ic { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+.cat-btn .lbl { font-weight: 700; font-size: 0.88rem; color: var(--navy-700); }
+.cat-btn.full { grid-column: 1 / -1; }
+
+.step2 { display: none; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
+.step2.show { display: block; animation: fadeUp .3s; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.step2 .field { margin-bottom: 14px; }
+.step2 label { display: block; font-size: 0.86rem; font-weight: 600; color: var(--navy-700); margin-bottom: 6px; }
+.step2 input, .step2 textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--line-strong); border-radius: var(--r-md); font-size: 1rem; font-family: var(--font-body); }
+.step2 input:focus, .step2 textarea:focus { outline: none; border-color: var(--turq-500); box-shadow: 0 0 0 3px rgba(22,198,192,.12); }
+
+.lead-msg { padding: 12px 15px; border-radius: var(--r-md); font-size: 0.88rem; font-weight: 600; margin-top: 14px; display: none; }
+.lead-msg.err { display: block; background: rgba(220,38,38,.08); color: #dc2626; }
+.lead-msg.ok { display: none; text-align: center; padding: 30px 10px; }
+.lead-msg.ok.show { display: block; }
+.lead-msg.ok .big { font-size: 2.2rem; margin-bottom: 10px; }
+.lead-msg.ok h2 { font-size: 1.2rem; margin-bottom: 8px; }
+.lead-msg.ok p { color: var(--slate); font-size: 0.92rem; margin-bottom: 18px; }
+
+.wa-fallback { margin-top: 16px; text-align: center; font-size: 0.85rem; color: var(--slate); }
+.wa-fallback a { color: var(--wa); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="lead-wrap">
+  <a href="index.html" class="lead-brand">
+    <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 5 11h14l2 5.5"/><path d="M2.5 16.5h19l-1.6 3.2a1 1 0 0 1-.9.55H5a1 1 0 0 1-.9-.55Z"/><path d="M12 11V4M12 4l3 1.5M12 4 9 5.5"/></svg></span>
+    <span>Caribbean Supply</span>
+  </a>
+
+  <div class="lead-card">
+    <div id="formView">
+      <h1>Quelle est votre demande ?</h1>
+      <p class="sub">Dites-nous ce qu'il vous faut, on revient vers vous rapidement.</p>
+
+      <div class="cat-grid" id="catGrid">
+        <div class="cat-btn" data-cat="sourcing"><span class="ic">🔍</span><span class="lbl">Sourcing</span></div>
+        <div class="cat-btn" data-cat="cargo"><span class="ic">🚢</span><span class="lbl">Cargo</span></div>
+        <div class="cat-btn" data-cat="accompagnement"><span class="ic">🇨🇳</span><span class="lbl">Accompagnement en Chine</span></div>
+        <div class="cat-btn" data-cat="fournisseurs"><span class="ic">🏭</span><span class="lbl">Fournisseurs</span></div>
+        <div class="cat-btn full" data-cat="autre"><span class="ic">💬</span><span class="lbl">Autre demande</span></div>
+      </div>
+
+      <div class="step2" id="step2">
+        <div class="field">
+          <label for="leadContact">Email ou téléphone (WhatsApp) *</label>
+          <input type="text" id="leadContact" placeholder="ex: jean@mail.com ou +596..." />
+        </div>
+        <div class="field">
+          <label for="leadDetail">Un mot sur votre besoin (optionnel)</label>
+          <textarea id="leadDetail" rows="2" placeholder="ex: je cherche 500 t-shirts unis..."></textarea>
+        </div>
+        <button type="button" class="btn btn-accent btn-block" id="leadSubmit">Envoyer ma demande</button>
+        <div class="lead-msg err" id="leadError"></div>
+      </div>
+    </div>
+
+    <div class="lead-msg ok" id="okView">
+      <div class="big">✅</div>
+      <h2>Demande bien reçue !</h2>
+      <p>On revient vers vous sous 24-48h.</p>
+      <div class="wa-fallback">Besoin de nous parler tout de suite ?<br/><a id="waFallbackLink" href="https://wa.me/8619700268583" target="_blank" rel="noopener">📲 Nous contacter sur WhatsApp</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var selectedCategory = null;
+  var params = new URLSearchParams(window.location.search);
+  var source = params.get('source') || 'direct';
+
+  document.querySelectorAll('.cat-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.cat-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      selectedCategory = btn.getAttribute('data-cat');
+      document.getElementById('step2').classList.add('show');
+      document.getElementById('leadContact').focus();
+    });
+  });
+
+  document.getElementById('leadSubmit').addEventListener('click', function () {
+    var contact = document.getElementById('leadContact').value.trim();
+    var detail = document.getElementById('leadDetail').value.trim();
+    var errorBox = document.getElementById('leadError');
+    var btn = document.getElementById('leadSubmit');
+
+    if (!selectedCategory) return;
+    if (!contact) {
+      errorBox.textContent = 'Merci de renseigner un email ou un numéro.';
+      errorBox.className = 'lead-msg err';
+      return;
+    }
+
+    var contactType = contact.indexOf('@') !== -1 ? 'email' : 'phone';
+
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours…';
+
+    fetch('/api/leads/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category: selectedCategory,
+        contact: contact,
+        contactType: contactType,
+        source: source,
+        details: { message: detail }
+      })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res.success) throw new Error(res.error || 'Erreur');
+        document.getElementById('formView').style.display = 'none';
+        document.getElementById('okView').classList.add('show');
+      })
+      .catch(function () {
+        errorBox.textContent = "Erreur d'envoi, réessayez ou contactez-nous sur WhatsApp.";
+        errorBox.className = 'lead-msg err';
+        btn.disabled = false;
+        btn.textContent = 'Envoyer ma demande';
+      });
+  });
+})();
+</script>
+
+</body>
+</html>
