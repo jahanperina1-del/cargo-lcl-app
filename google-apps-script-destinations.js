@@ -342,6 +342,7 @@ function appendExpedition(data, destination) {
       'CBM Total',
       'Destination',
       'Statut',
+      'Payé',
       'ID',
     ]);
   }
@@ -360,6 +361,7 @@ function appendExpedition(data, destination) {
     data.cbm || '',
     destination,
     'Annoncé',
+    '',
     expeditionId,
   ]);
 
@@ -406,6 +408,19 @@ function getOrCreateSheet(ss, sheetName) {
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
   }
+
+  // Ajouter la colonne "Payé" si elle n'existe pas (pour les sheets existants)
+  if (sheet.getLastRow() > 0) {
+    const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    if (headerRow.indexOf('Payé') === -1 && headerRow.indexOf('ID') !== -1) {
+      // Insérer la colonne "Payé" avant "ID"
+      const idCol = headerRow.indexOf('ID') + 1;
+      sheet.insertColumn(idCol);
+      sheet.getRange(1, idCol).setValue('Payé');
+      Logger.log(`✓ Colonne "Payé" ajoutée au sheet ${sheetName}`);
+    }
+  }
+
   return sheet;
 }
 
