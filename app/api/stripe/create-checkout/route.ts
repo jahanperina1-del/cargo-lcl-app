@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
         clientName: data.clientName,
         cbm: data.cbm.toString(),
       },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/espace-client.html`,
+      success_url: `https://caribbeansupply.net/espace-client?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://caribbeansupply.net/espace-client?payment_cancelled=true`,
     })
 
     return NextResponse.json({

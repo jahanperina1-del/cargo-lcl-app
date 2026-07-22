@@ -137,8 +137,8 @@ export async function loginClient(email: string, password: string): Promise<{
     return { success: false, error: 'Email ou mot de passe incorrect' }
   }
 
-  // Generate token
-  const token = jwt.sign({ id: clientData.id, email: clientData.email }, JWT_SECRET, { expiresIn: '7d' })
+  // Generate token (30 days minimum)
+  const token = jwt.sign({ id: clientData.id, email: clientData.email }, JWT_SECRET, { expiresIn: '30d' })
 
   const client = {
     id: clientData.id,

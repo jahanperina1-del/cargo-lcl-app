@@ -89,6 +89,19 @@
 .gauge-meta b { color: var(--turq-400); font-family: var(--font-display); }
 .gauge-meta .pct { color: #fff; font-weight: 700; font-family: var(--font-display); font-size: 1.05rem; }
 
+/* CARIBBEANCOINS — programme de fidélité basé sur le CBM reçu cumulé */
+.rewards-card { background: linear-gradient(150deg, var(--orange-500), var(--orange-600)); color: #fff; border-radius: var(--r-lg); padding: 22px; box-shadow: 0 12px 30px rgba(255,122,61,.28); margin-bottom: 18px; }
+.rewards-card h4 { color: #fff; font-family: var(--font-display); font-size: 1rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.rewards-card .sub { color: rgba(255,255,255,.85); font-size: 0.82rem; margin-bottom: 16px; }
+.rewards-balance { display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px; }
+.rewards-balance b { font-family: var(--font-display); font-weight: 700; font-size: 2.2rem; line-height: 1; }
+.rewards-balance span { font-size: 0.85rem; color: rgba(255,255,255,.85); }
+.rewards-bar-track { height: 12px; border-radius: 8px; background: rgba(255,255,255,.22); overflow: hidden; }
+.rewards-bar-fill { height: 100%; border-radius: 8px; background: #fff; width: 0%; transition: width .5s cubic-bezier(.2,.7,.3,1); }
+.rewards-meta { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.82rem; color: rgba(255,255,255,.9); }
+.rewards-tier { margin-top: 14px; background: rgba(255,255,255,.16); border-radius: var(--r-md); padding: 10px 14px; font-size: 0.85rem; font-weight: 600; text-align: center; }
+.rewards-tiers-list { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.72rem; color: rgba(255,255,255,.75); }
+
 /* ORDERS & INVOICES */
 .orders-section { margin-top: 30px; }
 .order-item { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
@@ -314,6 +327,28 @@
             <div class="gauge-meta">
               <span><b id="gaugeCbm">0</b> / 67 CBM</span>
               <span class="pct" id="gaugePct">0%</span>
+            </div>
+          </div>
+
+          <!-- CARIBBEANCOINS — programme de fidélité -->
+          <div class="rewards-card">
+            <h4>🪙 CaribbeanCoins</h4>
+            <p class="sub">1 coin gagné par CBM reçu et vérifié — cumulé à vie</p>
+            <div class="rewards-balance">
+              <b id="rewardsBalance">0</b>
+              <span>coins</span>
+            </div>
+            <div class="rewards-bar-track">
+              <div class="rewards-bar-fill" id="rewardsBarFill" style="width:0%"></div>
+            </div>
+            <div class="rewards-meta">
+              <span id="rewardsNextLabel">Encore 5 coins pour débloquer 5% de réduction</span>
+            </div>
+            <div class="rewards-tier" id="rewardsTierBox" style="display:none"></div>
+            <div class="rewards-tiers-list">
+              <span>5 → 5%</span>
+              <span>10 → 10%</span>
+              <span>20 → 15%</span>
             </div>
           </div>
 
@@ -710,6 +745,48 @@
 
     totalReceivedCbm = receivedCbm;
     updatePaymentAmount();
+    updateRewardsCard();
+  }
+
+  // CaribbeanCoins — 1 coin par CBM reçu et vérifié (cumul à vie)
+  var REWARD_TIERS = [
+    { threshold: 5, label: "5%" },
+    { threshold: 10, label: "10%" },
+    { threshold: 20, label: "15%" }
+  ];
+
+  function updateRewardsCard() {
+    var coins = Math.floor(totalReceivedCbm);
+    $("#rewardsBalance").textContent = coins;
+
+    var currentTier = null, nextTier = null;
+    for (var i = 0; i < REWARD_TIERS.length; i++) {
+      if (coins >= REWARD_TIERS[i].threshold) {
+        currentTier = REWARD_TIERS[i];
+      } else {
+        nextTier = REWARD_TIERS[i];
+        break;
+      }
+    }
+
+    var tierBox = $("#rewardsTierBox");
+    if (currentTier) {
+      tierBox.style.display = "block";
+      tierBox.textContent = "🎉 Palier débloqué : " + currentTier.label + " de réduction — contactez-nous pour l'utiliser";
+    } else {
+      tierBox.style.display = "none";
+    }
+
+    var prevThreshold = currentTier ? currentTier.threshold : 0;
+    if (nextTier) {
+      var span = nextTier.threshold - prevThreshold;
+      var progress = Math.min(100, ((coins - prevThreshold) / span) * 100);
+      $("#rewardsBarFill").style.width = progress + "%";
+      $("#rewardsNextLabel").textContent = "Encore " + (nextTier.threshold - coins) + " coins pour débloquer " + nextTier.label + " de réduction";
+    } else {
+      $("#rewardsBarFill").style.width = "100%";
+      $("#rewardsNextLabel").textContent = "🏆 Palier maximum atteint !";
+    }
   }
 
   function renderExpeditionsList(list) {
