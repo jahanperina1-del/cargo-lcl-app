@@ -58,6 +58,8 @@ function doPost(e) {
       deleteExpedition(data, destination);
     } else if (type === 'payment') {
       updatePaymentStatus(ss, data, destination);
+    } else if (type === 'mark_paid') {
+      markExpeditionsPaid(data, destination);
     }
 
     return ContentService.createTextOutput(JSON.stringify({ success: true }))
@@ -203,6 +205,53 @@ function ensureIdColumn(sheet) {
   if (headerRow.indexOf('ID') === -1) {
     sheet.getRange(1, lastCol + 1).setValue('ID');
     sheet.getRange(1, lastCol + 1).setFontWeight('bold').setBackground('#0FAFAA').setFontColor('#FFFFFF');
+  }
+}
+
+// ============================================
+// S'assure que la colonne "Payé" existe. Retourne son numéro (1-based).
+// ============================================
+function ensurePaidColumn(sheet) {
+  const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const paidIdx = headerRow.indexOf('Payé');
+  if (paidIdx !== -1) return paidIdx + 1; // déjà présente
+
+  // Insérer juste avant "ID" (ou à la fin si pas d'ID)
+  const idIdx = headerRow.indexOf('ID');
+  const insertAt = idIdx === -1 ? sheet.getLastColumn() + 1 : idIdx + 1;
+  sheet.insertColumn(insertAt);
+  sheet.getRange(1, insertAt).setValue('Payé')
+    .setFontWeight('bold').setBackground('#0FAFAA').setFontColor('#FFFFFF');
+  return insertAt;
+}
+
+// ============================================
+// Marque "x" dans la colonne "Payé" pour tous les colis REÇUS et
+// non encore payés d'un client. Appelé automatiquement après un
+// paiement Stripe confirmé (le client ne peut donc pas repayer),
+// mais tu peux aussi mettre le "x" à la main pour un paiement hors ligne.
+// ============================================
+function markExpeditionsPaid(data, destination) {
+  const ss = getExpeditionSpreadsheet(destination);
+  const sheetName = getExpeditionSheetName(destination);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet || sheet.getLastRow() < 2) return;
+
+  const paidColNum = ensurePaidColumn(sheet); // 1-based
+  const allData = sheet.getDataRange().getValues();
+  const headerRow = allData[0];
+  const numCol = headerRow.indexOf('N° Client');
+  const statusCol = headerRow.indexOf('Statut');
+
+  for (let i = 1; i < allData.length; i++) {
+    if (allData[i][numCol] === data.clientNumber) {
+      const status = (allData[i][statusCol] || '').toString().toLowerCase();
+      const isReceived = status.indexOf('reçu') !== -1 || status.indexOf('recu') !== -1;
+      const alreadyPaid = (allData[i][paidColNum - 1] || '').toString().toLowerCase().indexOf('x') !== -1;
+      if (isReceived && !alreadyPaid) {
+        sheet.getRange(i + 1, paidColNum).setValue('x');
+      }
+    }
   }
 }
 

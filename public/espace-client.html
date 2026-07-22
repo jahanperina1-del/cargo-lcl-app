@@ -517,7 +517,6 @@
     clearMsg();
     loadOrders(c.number);
     loadExpeditions(c.number, c.destCode);
-    loadClientPayments(c.number);
     loadContainerFill(c.destCode, c.island);
     var waBtn = $("#waInvoiceBtn");
     if (waBtn) {
@@ -696,14 +695,27 @@
   }
 
   var totalReceivedCbm = 0;
+  var dueCbm = 0; // CBM reçu au warehouse ET pas encore payé (= à régler)
+
+  // La colonne "Payé" du Google Sheet est la SEULE source de vérité.
+  // Un colis est payé si le "x" y est mis — soit automatiquement par le site
+  // après un paiement Stripe, soit à la main pour un paiement hors ligne.
+  function isExpPaid(exp) {
+    return !!(exp && (exp.paid || exp.paye ||
+      (exp.status && exp.status.toString().toLowerCase().indexOf('pay') !== -1)));
+  }
 
   function renderExpeditionsRecap(list) {
     var pending = list.filter(function (exp) { return !isReceived(exp.status); });
     var received = list.filter(function (exp) { return isReceived(exp.status); });
 
-    var pendingCbm = 0, receivedCbm = 0;
+    var pendingCbm = 0, receivedCbm = 0, dueCalc = 0;
     pending.forEach(function (exp) { pendingCbm += parseFloat(exp.cbm || 0); });
-    received.forEach(function (exp) { receivedCbm += parseFloat(exp.cbm || 0); });
+    received.forEach(function (exp) {
+      var c = parseFloat(exp.cbm || 0);
+      receivedCbm += c;
+      if (!isExpPaid(exp)) dueCalc += c; // reçu mais pas encore payé
+    });
 
     $("#recapPendingCount").textContent = pending.length;
     $("#recapPendingCbm").textContent = pendingCbm.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " CBM";
@@ -711,64 +723,26 @@
     $("#recapReceivedCbm").textContent = receivedCbm.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " CBM";
 
     totalReceivedCbm = receivedCbm;
+    dueCbm = dueCalc;
     updatePaymentAmount();
-    updateRewardsCard();
-  }
-
-  var clientPayments = {}; // Cache des paiements
-  var totalPaidCbm = 0; // CBM payé (depuis Supabase)
-
-  function loadClientPayments(clientNumber) {
-    fetch('/api/orders/get-payments?clientNumber=' + encodeURIComponent(clientNumber))
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.success) {
-          clientPayments = { totalCbm: data.totalPaidCbm, hasPaid: data.hasPaid, payments: data.payments };
-          totalPaidCbm = data.totalPaidCbm || 0; // Mettre à jour le CBM payé réel
-          updatePaymentAmount(); // Recalculer le montant à payer
-          // Recharger l'affichage des expéditions avec les infos de paiement
-          var c = load();
-          if (c) loadExpeditions(c.number, c.destCode);
-        }
-      })
-      .catch(function (err) { console.error("Erreur chargement paiements:", err); });
-  }
-
-  function isPaid(cbm) {
-    if (!clientPayments || !clientPayments.payments) return false;
-    // Vérifier si ce CBM a été payé
-    var totalPaidCbm = clientPayments.totalCbm || 0;
-    return cbm <= totalPaidCbm;
   }
 
 function renderExpeditionsList(list) {
     var html = "";
-    var cumulativeCbm = 0;
 
-    // Filtrer les colis : ne pas afficher ceux qui sont payés
-    var filteredList = list.filter(function (exp) {
-      var isPaidFlag = exp.paid || exp.paye || (exp.status && exp.status.toString().toLowerCase().indexOf('pay') !== -1);
-      return !isPaidFlag; // Ne garder que les colis non payés
-    });
+    // La colonne "Payé" fait foi : on masque les colis déjà payés,
+    // il ne reste affiché que ce qu'il reste à régler.
+    var filteredList = list.filter(function (exp) { return !isExpPaid(exp); });
 
     filteredList.forEach(function (exp) {
       var statusLabel = exp.status || "Annoncé";
       var received = isReceived(statusLabel);
       var expCbm = parseFloat(exp.cbm || 0);
-      cumulativeCbm += expCbm;
 
-      var isPaidStatus = isPaid(cumulativeCbm);
-      var statusBadge = "";
-
-      if (received) {
-        statusBadge = "✅ Reçu au warehouse";
-      } else if (isPaidStatus) {
-        statusBadge = "💳 Payé";
-      } else {
-        statusBadge = statusLabel;
-      }
-
-      var statusClass = received ? "status-paid" : (isPaidStatus ? "status-invoiced" : "status-pending");
+      // Les colis payés sont masqués : ceux affichés sont soit reçus à régler,
+      // soit encore annoncés (en attente d'arrivée au warehouse).
+      var statusBadge = received ? "📦 Reçu — à régler" : statusLabel;
+      var statusClass = received ? "status-pending" : "status-pending";
       var canDelete = !received && exp.id;
       html += '<div class="order-item">'
         + '<div class="order-info">'
@@ -845,7 +819,7 @@ function renderExpeditionsList(list) {
     var payBtn = $("#stripePayBtn");
     if (!cbmInput || !amountDisplay || !payBtn) return;
 
-    var due = Math.max(0, Math.round((totalReceivedCbm - totalPaidCbm) * 100) / 100);
+    var due = Math.max(0, Math.round(dueCbm * 100) / 100);
     cbmInput.value = due;
     amountDisplay.textContent = (due * 380).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "€";
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe-client'
 import { createClient } from '@supabase/supabase-js'
+import { markExpeditionsPaid } from '@/lib/mark-expeditions-paid'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,6 +44,9 @@ export async function POST(request: NextRequest) {
         } catch (orderErr) {
           console.error('Supabase order error:', orderErr)
         }
+
+        // Marquer les colis reçus comme "Payé" dans Google Sheets
+        await markExpeditionsPaid(session.metadata.clientNumber)
       }
 
       return NextResponse.json({

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe-client'
 import { createClient } from '@supabase/supabase-js'
+import { markExpeditionsPaid } from '@/lib/mark-expeditions-paid'
 import Stripe from 'stripe'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
@@ -61,6 +62,9 @@ export async function POST(request: NextRequest) {
           } catch (err: any) {
             console.error('Erreur enregistrement paiement:', err.message)
           }
+
+          // Marquer les colis reçus comme "Payé" dans Google Sheets
+          await markExpeditionsPaid(clientNumber)
         }
         break
       }
