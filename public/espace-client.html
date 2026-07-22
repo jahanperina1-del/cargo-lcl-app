@@ -716,6 +716,7 @@
   }
 
   var clientPayments = {}; // Cache des paiements
+  var totalPaidCbm = 0; // CBM payé (depuis Supabase)
 
   function loadClientPayments(clientNumber) {
     fetch('/api/orders/get-payments?clientNumber=' + encodeURIComponent(clientNumber))
@@ -723,6 +724,8 @@
       .then(function (data) {
         if (data.success) {
           clientPayments = { totalCbm: data.totalPaidCbm, hasPaid: data.hasPaid, payments: data.payments };
+          totalPaidCbm = data.totalPaidCbm || 0; // Mettre à jour le CBM payé réel
+          updatePaymentAmount(); // Recalculer le montant à payer
           // Recharger l'affichage des expéditions avec les infos de paiement
           var c = load();
           if (c) loadExpeditions(c.number, c.destCode);
@@ -812,8 +815,6 @@ function renderExpeditionsList(list) {
     });
   }
 
-  var totalPaidCbm = 0;
-
   function loadOrders(clientNumber) {
     fetch("/api/orders/get-by-client", {
       method: "POST",
@@ -823,9 +824,6 @@ function renderExpeditionsList(list) {
       .then(function (r) { return r.json(); })
       .then(function (res) {
         var orders = res.orders || [];
-        totalPaidCbm = 0;
-        orders.forEach(function (o) { totalPaidCbm += parseFloat(o.cbm || 0); });
-        updatePaymentAmount();
 
         if (orders.length > 0) {
           renderOrders(orders);
