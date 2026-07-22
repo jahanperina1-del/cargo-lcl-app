@@ -301,6 +301,8 @@
             <div class="kv"><span class="k">Volume en cours</span><span class="v" id="recapPendingCbm">0.00 CBM</span></div>
             <div class="kv" style="border-top:1.5px solid var(--line);margin-top:6px;padding-top:12px"><span class="k">✅ Colis reçus (warehouse)</span><span class="v" id="recapReceivedCount">0</span></div>
             <div class="kv"><span class="k">Volume reçu</span><span class="v" id="recapReceivedCbm">0.00 CBM</span></div>
+            <div class="kv" style="border-top:1.5px solid var(--line);margin-top:6px;padding-top:12px"><span class="k">💳 Colis payés</span><span class="v" id="recapPaidCount" style="color:var(--turq-600)">0</span></div>
+            <div class="kv"><span class="k">Volume payé</span><span class="v" id="recapPaidCbm" style="color:var(--turq-600)">0.00 CBM</span></div>
             <div class="kv"><span class="k">Île</span><span class="v" id="dashIsland">Martinique</span></div>
           </div>
 
@@ -709,18 +711,23 @@
     var pending = list.filter(function (exp) { return !isReceived(exp.status); });
     var received = list.filter(function (exp) { return isReceived(exp.status); });
 
-    var pendingCbm = 0, receivedCbm = 0, dueCalc = 0;
+    var paid = list.filter(function (exp) { return isExpPaid(exp); });
+
+    var pendingCbm = 0, receivedCbm = 0, dueCalc = 0, paidCbm = 0;
     pending.forEach(function (exp) { pendingCbm += parseFloat(exp.cbm || 0); });
     received.forEach(function (exp) {
       var c = parseFloat(exp.cbm || 0);
       receivedCbm += c;
       if (!isExpPaid(exp)) dueCalc += c; // reçu mais pas encore payé
     });
+    paid.forEach(function (exp) { paidCbm += parseFloat(exp.cbm || 0); });
 
     $("#recapPendingCount").textContent = pending.length;
     $("#recapPendingCbm").textContent = pendingCbm.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " CBM";
     $("#recapReceivedCount").textContent = received.length;
     $("#recapReceivedCbm").textContent = receivedCbm.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " CBM";
+    $("#recapPaidCount").textContent = paid.length;
+    $("#recapPaidCbm").textContent = paidCbm.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " CBM";
 
     totalReceivedCbm = receivedCbm;
     dueCbm = dueCalc;
