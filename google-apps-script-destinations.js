@@ -131,7 +131,8 @@ function getClientExpeditions(clientNumber, destination) {
   for (let i = 1; i < allData.length; i++) {
     if (allData[i][numCol] === clientNumber) {
       const paidValue = paidCol >= 0 ? allData[i][paidCol] : '';
-      const isPaid = paidValue && paidValue.toString().toLowerCase().indexOf('x') !== -1;
+      // Payé = n'importe quelle valeur dans la colonne (x, payé, ✓, oui...) ; vide = pas payé
+      const isPaid = !!(paidValue && paidValue.toString().trim() !== '');
 
       results.push({
         id: allData[i][idCol] || '',
@@ -247,12 +248,34 @@ function markExpeditionsPaid(data, destination) {
     if (allData[i][numCol] === data.clientNumber) {
       const status = (allData[i][statusCol] || '').toString().toLowerCase();
       const isReceived = status.indexOf('reçu') !== -1 || status.indexOf('recu') !== -1;
-      const alreadyPaid = (allData[i][paidColNum - 1] || '').toString().toLowerCase().indexOf('x') !== -1;
+      const alreadyPaid = (allData[i][paidColNum - 1] || '').toString().trim() !== '';
       if (isReceived && !alreadyPaid) {
-        sheet.getRange(i + 1, paidColNum).setValue('x');
+        sheet.getRange(i + 1, paidColNum).setValue('Payé');
       }
     }
   }
+}
+
+// ============================================
+// ▶ À EXÉCUTER UNE SEULE FOIS À LA MAIN (menu "Exécuter" > ajouterColonnePayee)
+// Ajoute tout de suite la colonne "Payé" dans les 3 fichiers d'expéditions,
+// sans attendre qu'une nouvelle expédition ou un paiement la crée.
+// ============================================
+function ajouterColonnePayee() {
+  ['MTQ', 'GLP', 'GUY'].forEach(function (dest) {
+    try {
+      const ss = getExpeditionSpreadsheet(dest);
+      const sheet = ss.getSheetByName(getExpeditionSheetName(dest));
+      if (!sheet || sheet.getLastColumn() === 0) {
+        Logger.log('⏭️ ' + dest + ' : onglet vide ou introuvable (la colonne sera créée à la 1re expédition)');
+        return;
+      }
+      const col = ensurePaidColumn(sheet);
+      Logger.log('✓ ' + dest + ' : colonne "Payé" OK (colonne n°' + col + ')');
+    } catch (e) {
+      Logger.log('✗ ' + dest + ' : ' + e);
+    }
+  });
 }
 
 // ============================================
