@@ -122,11 +122,15 @@ function getClientExpeditions(clientNumber, destination) {
   const weightCol = headerRow.indexOf('Poids Total (kg)');
   const cbmCol = headerRow.indexOf('CBM Total');
   const statusCol = headerRow.indexOf('Statut');
+  const paidCol = headerRow.indexOf('Payé');
   const idCol = headerRow.indexOf('ID');
 
   const results = [];
   for (let i = 1; i < allData.length; i++) {
     if (allData[i][numCol] === clientNumber) {
+      const paidValue = paidCol >= 0 ? allData[i][paidCol] : '';
+      const isPaid = paidValue && paidValue.toString().toLowerCase().indexOf('x') !== -1;
+
       results.push({
         id: allData[i][idCol] || '',
         date: allData[i][dateCol],
@@ -134,6 +138,7 @@ function getClientExpeditions(clientNumber, destination) {
         weight: allData[i][weightCol],
         cbm: allData[i][cbmCol],
         status: allData[i][statusCol],
+        paid: isPaid,
       });
     }
   }
