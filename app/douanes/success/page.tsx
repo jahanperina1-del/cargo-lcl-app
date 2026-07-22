@@ -4,11 +4,24 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
+interface PaymentData {
+  success: boolean
+  status: string
+  customer_email: string
+  customer_name: string
+  client_number: string
+  cbm: string
+  amount_total: number
+  invoice_number: string
+  payment_date: number
+}
+
 function StripeSuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState<'success' | 'error' | 'loading'>('loading')
+  const [paymentData, setPaymentData] = useState<PaymentData | null>(null)
 
   useEffect(() => {
     if (sessionId) {
@@ -27,6 +40,8 @@ function StripeSuccessContent() {
       })
 
       if (response.ok) {
+        const data = await response.json()
+        setPaymentData(data)
         setStatus('success')
       } else {
         setStatus('error')
@@ -44,25 +59,49 @@ function StripeSuccessContent() {
         {status === 'success' ? (
           <>
             <div className="mb-6 text-6xl">✅</div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-4">
-              Bienvenue au Premium!
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              Paiement reçu!
             </h1>
             <p className="text-slate-600 mb-8">
-              Ton abonnement est activé. Tu as maintenant accès <strong>illimité</strong> à tous
-              les calculs de douanes.
+              Merci pour ton achat. Voici tes informations:
             </p>
 
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-6 mb-8 border border-purple-200">
-              <p className="text-sm text-purple-700 mb-3">
-                <strong>Ton accès Premium inclut:</strong>
+            {/* Facture Section */}
+            <div className="bg-white border-2 border-slate-200 rounded-lg p-6 mb-8 text-left">
+              <div className="mb-6 pb-6 border-b-2 border-slate-200">
+                <p className="text-sm text-slate-600"><strong>Facture N°:</strong> {paymentData?.invoice_number?.slice(-8)}</p>
+                <p className="text-sm text-slate-600">
+                  <strong>Date:</strong> {paymentData?.payment_date ? new Date(paymentData.payment_date * 1000).toLocaleDateString('fr-FR') : 'N/A'}
+                </p>
+              </div>
+
+              {/* Client Info */}
+              <div className="mb-6">
+                <p className="text-sm text-slate-500 uppercase tracking-wide mb-2"><strong>Client</strong></p>
+                <p className="text-base font-semibold text-slate-900">{paymentData?.customer_name || 'N/A'}</p>
+                <p className="text-sm text-slate-600">Email: {paymentData?.customer_email || 'N/A'}</p>
+                <p className="text-sm text-slate-600">N° Client: {paymentData?.client_number || 'N/A'}</p>
+              </div>
+
+              {/* Details */}
+              <div className="bg-slate-50 rounded-lg p-4 mb-6">
+                <div className="flex justify-between mb-3 pb-3 border-b border-slate-200">
+                  <span className="text-sm font-semibold text-slate-900">Description</span>
+                  <span className="text-sm font-semibold text-slate-900">Montant</span>
+                </div>
+                <div className="flex justify-between mb-4">
+                  <span className="text-sm text-slate-700">Calcul de douanes (CBM: {paymentData?.cbm})</span>
+                  <span className="text-sm font-semibold text-slate-900">{paymentData?.amount_total?.toFixed(2)}€</span>
+                </div>
+                <div className="pt-3 border-t-2 border-slate-300 flex justify-between">
+                  <span className="font-bold text-slate-900">Total</span>
+                  <span className="font-bold text-blue-600 text-lg">{paymentData?.amount_total?.toFixed(2)}€</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500">
+                Un reçu détaillé a été envoyé à {paymentData?.customer_email}
               </p>
-              <ul className="text-sm text-purple-700 text-left space-y-2">
-                <li>✓ Calculs illimités</li>
-                <li>✓ Export PDF + Excel</li>
-                <li>✓ Historique illimité</li>
-                <li>✓ API access</li>
-                <li>✓ Support prioritaire</li>
-              </ul>
             </div>
 
             <div className="space-y-3">
@@ -70,18 +109,12 @@ function StripeSuccessContent() {
                 href="/douanes"
                 className="block w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition"
               >
-                Commencer les calculs →
-              </Link>
-              <Link
-                href="/douanes/dashboard"
-                className="block w-full border-2 border-blue-600 text-blue-600 font-semibold py-3 rounded-lg hover:bg-blue-50 transition"
-              >
-                Voir mon historique
+                Retour à l'accueil →
               </Link>
             </div>
 
             <p className="text-xs text-slate-500 mt-8">
-              Un reçu a été envoyé à ton email. Merci pour ton soutien! 🙏
+              Merci pour ton soutien! 🙏
             </p>
           </>
         ) : status === 'error' ? (

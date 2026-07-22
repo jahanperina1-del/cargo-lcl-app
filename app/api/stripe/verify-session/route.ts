@@ -49,6 +49,12 @@ export async function POST(request: NextRequest) {
         success: true,
         status: 'paid',
         customer_email: session.customer_email,
+        customer_name: session.metadata?.clientName || 'Client',
+        client_number: session.metadata?.clientNumber || 'N/A',
+        cbm: session.metadata?.cbm || '0',
+        amount_total: (session.amount_total || 0) / 100,
+        invoice_number: sessionId,
+        payment_date: session.created,
       })
     } else {
       return NextResponse.json(
