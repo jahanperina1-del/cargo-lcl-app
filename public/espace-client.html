@@ -517,6 +517,7 @@
     clearMsg();
     loadOrders(c.number);
     loadExpeditions(c.number, c.destCode);
+    loadClientPayments(c.number);
     loadContainerFill(c.destCode, c.island);
     var waBtn = $("#waInvoiceBtn");
     if (waBtn) {
@@ -714,18 +715,56 @@
     updateRewardsCard();
   }
 
+  var clientPayments = {}; // Cache des paiements
+
+  function loadClientPayments(clientNumber) {
+    fetch('/api/orders/get-payments?clientNumber=' + encodeURIComponent(clientNumber))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.success) {
+          clientPayments = { totalCbm: data.totalPaidCbm, hasPaid: data.hasPaid, payments: data.payments };
+          // Recharger l'affichage des expéditions avec les infos de paiement
+          var c = load();
+          if (c) loadExpeditions(c.number, c.destCode);
+        }
+      })
+      .catch(function (err) { console.error("Erreur chargement paiements:", err); });
+  }
+
+  function isPaid(cbm) {
+    if (!clientPayments || !clientPayments.payments) return false;
+    // Vérifier si ce CBM a été payé
+    var totalPaidCbm = clientPayments.totalCbm || 0;
+    return cbm <= totalPaidCbm;
+  }
+
 function renderExpeditionsList(list) {
     var html = "";
+    var cumulativeCbm = 0;
     list.forEach(function (exp) {
       var statusLabel = exp.status || "Annoncé";
       var received = isReceived(statusLabel);
-      var statusClass = received ? "status-paid" : "status-pending";
+      var expCbm = parseFloat(exp.cbm || 0);
+      cumulativeCbm += expCbm;
+
+      var isPaidStatus = isPaid(cumulativeCbm);
+      var statusBadge = "";
+
+      if (received) {
+        statusBadge = "✅ Reçu au warehouse";
+      } else if (isPaidStatus) {
+        statusBadge = "💳 Payé";
+      } else {
+        statusBadge = statusLabel;
+      }
+
+      var statusClass = received ? "status-paid" : (isPaidStatus ? "status-invoiced" : "status-pending");
       var canDelete = !received && exp.id;
       html += '<div class="order-item">'
         + '<div class="order-info">'
         + '<span class="order-date">' + (exp.date || "") + '</span>'
-        + '<div class="order-cbm">' + parseFloat(exp.cbm || 0).toFixed(2) + ' CBM</div>'
-        + '<span class="status-badge ' + statusClass + '">' + (received ? "✅ Reçu au warehouse" : statusLabel) + '</span>'
+        + '<div class="order-cbm">' + expCbm.toFixed(2) + ' CBM</div>'
+        + '<span class="status-badge ' + statusClass + '">' + statusBadge + '</span>'
         + '</div>'
         + (canDelete ? '<div class="order-actions"><button type="button" class="btn-download" style="background:#dc2626" data-del-exp="' + exp.id + '">🗑️ Annuler</button></div>' : '')
         + '</div>';
