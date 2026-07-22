@@ -132,6 +132,9 @@
 .btn-send-warehouse:disabled { opacity: 0.6; cursor: not-allowed; }
 .exp-confirm { display: none; background: rgba(16,185,129,.1); color: var(--turq-600); padding: 12px 14px; border-radius: var(--r-md); font-size: 0.9rem; font-weight: 600; margin-top: 12px; text-align: center; }
 .exp-confirm.show { display: block; }
+.exp-error { display: none; background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; border-radius: var(--r-md); padding: 12px 14px; font-size: 0.86rem; margin-top: 12px; line-height: 1.55; }
+.exp-error.show { display: block; }
+.exp-field input.bad { border-color: #dc2626 !important; background: #fef2f2; }
 
 /* SUPPLIER INVOICES UPLOAD */
 .supplier-upload-section { background: linear-gradient(135deg, rgba(22,198,192,.08), rgba(56,217,210,.08)); border: 2px dashed var(--turq-500); border-radius: var(--r-lg); padding: 24px; margin-top: 20px; }
@@ -336,6 +339,7 @@
             </div>
 
             <button type="button" class="btn-send-warehouse" id="expSendBtn">📤 Envoyer à la warehouse</button>
+            <div class="exp-error" id="expError"></div>
             <div class="exp-confirm" id="expConfirm">✅ Votre expédition a bien été envoyée à la warehouse !</div>
           </div>
 
@@ -597,6 +601,7 @@
         var cbm = (p.l * p.w * p.h / 1e6) * p.qty;
         head.textContent = expFmtNum(cbm, 3) + " CBM";
         expCompute();
+        expClearError();
       });
     });
     document.querySelectorAll('[data-edel]').forEach(function (b) {
@@ -613,6 +618,61 @@
     $("#expTotalCbm").textContent = expFmtNum(totalCbm, 2) + " CBM";
   }
 
+  // Garde-fous : valeurs réalistes pour du groupage LCL (ajuste si besoin)
+  var EXP_LIMITS = { dimMin: 1, dimMax: 300, kgMin: 0.1, kgMax: 1500, qtyMin: 1, qtyMax: 500, maxDensity: 8000, maxTotalCbm: 67 };
+
+  function expValidate() {
+    var messages = [], bad = {}, totalCbm = 0;
+    function flag(pid, key) { bad[pid + ":" + key] = true; }
+
+    expParcels.forEach(function (p, i) {
+      var n = i + 1;
+      [["l", "longueur"], ["w", "largeur"], ["h", "hauteur"]].forEach(function (d) {
+        var k = d[0];
+        if (!(p[k] > 0)) { messages.push("Colis " + n + " : " + d[1] + " manquante"); flag(p.id, k); }
+        else if (p[k] < EXP_LIMITS.dimMin || p[k] > EXP_LIMITS.dimMax) {
+          messages.push("Colis " + n + " : " + d[1] + " doit être entre " + EXP_LIMITS.dimMin + " et " + EXP_LIMITS.dimMax + " cm"); flag(p.id, k);
+        }
+      });
+      if (!(p.qty >= EXP_LIMITS.qtyMin) || p.qty > EXP_LIMITS.qtyMax || Math.floor(p.qty) !== p.qty) {
+        messages.push("Colis " + n + " : quantité invalide (entier de 1 à " + EXP_LIMITS.qtyMax + ")"); flag(p.id, "qty");
+      }
+      if (!(p.kg > 0) || p.kg < EXP_LIMITS.kgMin || p.kg > EXP_LIMITS.kgMax) {
+        messages.push("Colis " + n + " : poids unitaire entre " + EXP_LIMITS.kgMin + " et " + EXP_LIMITS.kgMax + " kg"); flag(p.id, "kg");
+      }
+      var vol = (p.l * p.w * p.h) / 1e6; // m³ par unité
+      if (vol > 0 && p.kg > 0 && (p.kg / vol) > EXP_LIMITS.maxDensity) {
+        messages.push("Colis " + n + " : poids trop lourd pour ces dimensions — revérifiez les cm ou les kg"); flag(p.id, "kg");
+      }
+      if (vol > 0 && p.qty > 0) totalCbm += vol * p.qty;
+    });
+
+    if (totalCbm > EXP_LIMITS.maxTotalCbm) {
+      messages.push("Volume total (" + expFmtNum(totalCbm, 2) + " CBM) supérieur à un conteneur complet (" + EXP_LIMITS.maxTotalCbm + " CBM). Contactez-nous pour un envoi de cette taille.");
+    }
+    return { messages: messages, bad: bad };
+  }
+
+  function expHighlightBad(bad) {
+    document.querySelectorAll("input[data-ep]").forEach(function (inp) {
+      var key = inp.getAttribute("data-ep") + ":" + inp.getAttribute("data-ek");
+      if (bad[key]) inp.classList.add("bad"); else inp.classList.remove("bad");
+    });
+  }
+
+  function expShowError(v) {
+    var box = $("#expError");
+    box.innerHTML = "<strong>⚠️ Vérifiez vos colis :</strong><ul style='margin:6px 0 0;padding-left:18px'>" +
+      v.messages.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul>";
+    box.classList.add("show");
+    expHighlightBad(v.bad);
+  }
+
+  function expClearError() {
+    $("#expError").classList.remove("show");
+    expHighlightBad({});
+  }
+
   expParcels.push(expNewParcel());
   expRender();
 
@@ -624,6 +684,12 @@
   $("#expSendBtn").addEventListener("click", function () {
     var c = load();
     if (!c) return;
+
+    // Garde-fous : bloque l'envoi si des dimensions/poids sont irréalistes
+    var v = expValidate();
+    if (v.messages.length) { expShowError(v); return; }
+    expClearError();
+
     var totalCbm = 0, totalKg = 0, desc = [];
     expParcels.forEach(function (p, i) {
       totalCbm += (p.l * p.w * p.h / 1e6) * p.qty;
