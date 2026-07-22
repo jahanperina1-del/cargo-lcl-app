@@ -215,12 +215,19 @@ function ensureIdColumn(sheet) {
 function ensurePaidColumn(sheet) {
   const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const paidIdx = headerRow.indexOf('Payé');
-  if (paidIdx !== -1) return paidIdx + 1; // déjà présente
+  if (paidIdx !== -1) return paidIdx + 1; // déjà présente (1-based)
 
-  // Insérer juste avant "ID" (ou à la fin si pas d'ID)
-  const idIdx = headerRow.indexOf('ID');
-  const insertAt = idIdx === -1 ? sheet.getLastColumn() + 1 : idIdx + 1;
-  sheet.insertColumn(insertAt);
+  const idIdx = headerRow.indexOf('ID'); // 0-based, -1 si absent
+  let insertAt;
+  if (idIdx === -1) {
+    // Pas de colonne "ID" : on ajoute "Payé" à la fin
+    sheet.insertColumnAfter(sheet.getLastColumn());
+    insertAt = sheet.getLastColumn();
+  } else {
+    // On insère juste avant "ID"
+    insertAt = idIdx + 1; // position 1-based de "ID"
+    sheet.insertColumnBefore(insertAt);
+  }
   sheet.getRange(1, insertAt).setValue('Payé')
     .setFontWeight('bold').setBackground('#0FAFAA').setFontColor('#FFFFFF');
   return insertAt;
@@ -487,7 +494,7 @@ function getOrCreateSheet(ss, sheetName) {
     if (headerRow.indexOf('Payé') === -1 && headerRow.indexOf('ID') !== -1) {
       // Insérer la colonne "Payé" avant "ID"
       const idCol = headerRow.indexOf('ID') + 1;
-      sheet.insertColumn(idCol);
+      sheet.insertColumnBefore(idCol);
       sheet.getRange(1, idCol).setValue('Payé');
       Logger.log(`✓ Colonne "Payé" ajoutée au sheet ${sheetName}`);
     }
