@@ -741,7 +741,14 @@
 function renderExpeditionsList(list) {
     var html = "";
     var cumulativeCbm = 0;
-    list.forEach(function (exp) {
+
+    // Filtrer les colis : ne pas afficher ceux qui sont payés
+    var filteredList = list.filter(function (exp) {
+      var isPaidFlag = exp.paid || exp.paye || (exp.status && exp.status.toString().toLowerCase().indexOf('pay') !== -1);
+      return !isPaidFlag; // Ne garder que les colis non payés
+    });
+
+    filteredList.forEach(function (exp) {
       var statusLabel = exp.status || "Annoncé";
       var received = isReceived(statusLabel);
       var expCbm = parseFloat(exp.cbm || 0);
@@ -769,6 +776,12 @@ function renderExpeditionsList(list) {
         + (canDelete ? '<div class="order-actions"><button type="button" class="btn-download" style="background:#dc2626" data-del-exp="' + exp.id + '">🗑️ Annuler</button></div>' : '')
         + '</div>';
     });
+
+    // Si tous les colis sont payés, afficher un message
+    if (filteredList.length === 0 && list.length > 0) {
+      html = '<div class="no-orders"><p>✅ Tous vos colis sont payés ! Bravo 🎉</p></div>';
+    }
+
     $("#expeditionsList").innerHTML = html;
     $("#expeditionsSection").style.display = "block";
 
